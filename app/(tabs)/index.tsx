@@ -15,7 +15,6 @@ import { SearchWidget } from '@/components/ui/search-bar';
 export default function MapScreen() {
   const handleCompoundSearch = (building: string | null, room: string | null) => {
       console.log("Starting navigation to:", building, room);
-      // Your logic here: e.g., zoom map to building, highlight room
   };
 
 
