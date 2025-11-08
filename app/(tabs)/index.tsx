@@ -9,10 +9,13 @@ import {Link, router} from 'expo-router';
 import {MapView} from "@maplibre/maplibre-react-native";
 import {FontAwesome} from "@expo/vector-icons";
 import { toggleButtonStyle } from '@/components/ui/toggle-tab-button';
+import { NavigationMap } from '@/components/ui/map';
 
 export default function MapScreen() {
   return (
       <View style={styles.container}>
+
+          <NavigationMap />
 
 
         <TouchableOpacity
