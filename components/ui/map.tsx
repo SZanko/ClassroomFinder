@@ -1,5 +1,9 @@
-import { MapView } from "@maplibre/maplibre-react-native";
+import MapView from "react-native-maps";
 
 export function NavigationMap() {
-  return <MapView style={{ flex: 1 }} />;
+    return (
+        <MapView
+            style={{ flex: 1 }}
+        />
+    );
 }
