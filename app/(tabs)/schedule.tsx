@@ -20,7 +20,7 @@ const HOURS = [
   '8-9', '9-10', '10-11', '11-12', '12-13', '13-14', '14-15', '15-16',
   '16-17', '17-18', '18-19', '19-20', '20-21', '21-22', '22-23', '23-00'
 ];
-const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 
 export default function Schedule() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -149,11 +149,10 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    minHeight: 40, // UPDATED: Much taller rows
+    minHeight: 40,
   },
   cell: {
-    // flex: 1,  <-- Removed flex:1 so it respects minWidth
-    minWidth: 55, // UPDATED: Wider cells (forces horizontal scroll)
+    minWidth: 55,
     borderRightWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#333',
@@ -162,13 +161,13 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   timeCell: {
-    minWidth: 60, // Fixed width for time column
+    minWidth: 60,
     backgroundColor: '#f9f9f9',
   },
   headerCell: {
     backgroundColor: '#f0f0f0',
     height: 40,
-    minHeight: 40, // Keep header slightly shorter than data rows
+    minHeight: 40,
   },
   headerText: {
     fontWeight: '600',
@@ -181,7 +180,7 @@ const styles = StyleSheet.create({
   },
   actionContainer: {
     zIndex: 10,
-    marginBottom: 70, // Give a little more space above the map button
+    marginBottom: 70,
   },
   dropdownTrigger: {
     flexDirection: 'row',
