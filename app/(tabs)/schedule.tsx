@@ -16,6 +16,7 @@ import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
 import { ProfileIcon } from '@/components/ui/profile_icon_button';
 import { UploadScheduleModal } from '@/components/modals/uploadScheduleModal';
 import { ScheduleEntry, HOURS_MAP, DAYS } from '@/assets/data/sample-schedule'; 
+import { AddManualScheduleModal } from '@/components/modals/add-manually-modal';
 
 const { width } = Dimensions.get('window');
 
@@ -26,13 +27,16 @@ const TIME_COLUMN_WIDTH = 60;
 export default function Schedule() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
+  const [isAddManualModalVisible, setIsAddManualModalVisible] = useState(false);
   const [currentSchedule, setCurrentSchedule] = useState<ScheduleEntry[]>([]);
 
   const handleMenuOption = (option: string) => {
     setIsMenuOpen(false);
     if (option === 'Upload Schedule') {
       setIsUploadModalVisible(true);
-    } else {
+    } else if (option === 'Add Manually') {
+       setIsAddManualModalVisible(true); 
+    }else {
       Alert.alert("Selected", option);
     }
   };
@@ -46,6 +50,12 @@ export default function Schedule() {
     setCurrentSchedule(schedule);
     setIsUploadModalVisible(false);
     Alert.alert("Success", "Schedule uploaded!");
+  };
+
+  const handleAddManualConfirm = (newEntry: ScheduleEntry) => {
+      // Add new entry to the existing array
+      setCurrentSchedule(prev => [...prev, newEntry]);
+      Alert.alert("Success", "Class added to schedule.");
   };
 
   // Function to render content inside a grid cell
@@ -155,6 +165,13 @@ export default function Schedule() {
           visible={isUploadModalVisible}
           onClose={() => setIsUploadModalVisible(false)}
           onUpload={handleUploadConfirm}
+        />
+        
+        <AddManualScheduleModal
+          visible={isAddManualModalVisible}
+          onClose={() => setIsAddManualModalVisible(false)}
+          onAdd={handleAddManualConfirm}
+          currentSchedule={currentSchedule}
         />
       </View>
     </SafeAreaView>
