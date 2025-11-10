@@ -6,50 +6,83 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-  Alert
+  Alert,
+  Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from "expo-router";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
 import { ProfileIcon } from '@/components/ui/profile_icon_button';
+import { UploadScheduleModal } from '@/components/modals/uploadScheduleModal';
+import { ScheduleEntry, HOURS_MAP, DAYS } from '@/assets/data/sample-schedule'; 
 
-// --- Constants ---
-// Simplified time format for cleaner display in bigger cells
-const HOURS = [
-  '8-9', '9-10', '10-11', '11-12', '12-13', '13-14', '14-15', '15-16',
-  '16-17', '17-18', '18-19', '19-20', '20-21', '21-22', '22-23', '23-00'
-];
-const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+const { width } = Dimensions.get('window');
+
+const CELL_MIN_WIDTH = (width - 40 - 60) / DAYS.length;
+const CELL_HEIGHT = 40;
+const TIME_COLUMN_WIDTH = 60;
 
 export default function Schedule() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
+  const [currentSchedule, setCurrentSchedule] = useState<ScheduleEntry[]>([]);
 
   const handleMenuOption = (option: string) => {
     setIsMenuOpen(false);
-    Alert.alert("Selected", option);
+    if (option === 'Upload Schedule') {
+      setIsUploadModalVisible(true);
+    } else {
+      Alert.alert("Selected", option);
+    }
   };
 
   const handleProfilePress = () => {
-      console.log("Profile icon pressed");
+    console.log("Profile icon pressed");
+    // router.push('/profile');
+  };
+
+  const handleUploadConfirm = (schedule: ScheduleEntry[]) => {
+    setCurrentSchedule(schedule);
+    setIsUploadModalVisible(false);
+    Alert.alert("Success", "Schedule uploaded!");
+  };
+
+  // Function to render content inside a grid cell
+  const renderCellContent = (day: string, hourIndex: number) => {
+    const entry = currentSchedule.find(
+      (e) => e.day === day && e.hourIndex === hourIndex
+    );
+    if (!entry) return null;
+
+    // Calculate height based on duration
+    const itemHeight = CELL_HEIGHT * entry.duration;
+
+    return (
+      <View style={[styles.scheduleEntry, { height: itemHeight - 2 }]}> 
+        <Text style={styles.scheduleEntrySubject}>{entry.subject}{entry.type}</Text>
+        <Text style={styles.scheduleEntryType}>({entry.type.toUpperCase()})</Text>
+        <Text style={styles.scheduleEntryLocation}>{entry.building}/{entry.room}</Text>
+      </View>
+    );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
+        {/* --- Header --- */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>My Schedule</Text>
           <ProfileIcon onPress={handleProfilePress}/>
         </View>
 
-        {/* --- Grid Container --- */}
+        {/* --- The Grid --- */}
         <View style={styles.gridContainer}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Added Horizontal ScrollView for wider cells */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.grid}>
-                {/* Header Row */}
+                {/* Header Row (Days) */}
                 <View style={styles.row}>
                   <View style={[styles.cell, styles.timeCell, styles.headerCell]} />
                   {DAYS.map((day) => (
@@ -60,18 +93,21 @@ export default function Schedule() {
                 </View>
 
                 {/* Time Rows */}
-                {HOURS.map((hour) => (
-                  <View key={hour} style={styles.row}>
-                    <View style={[styles.cell, styles.timeCell]}>
-                      <Text style={styles.timeText}>{hour}</Text>
-                    </View>
-                    {DAYS.map((day) => (
-                      <View key={`${day}-${hour}`} style={styles.cell}>
-                        {/* Class info goes here */}
+                {Object.keys(HOURS_MAP).map((hourString) => {
+                  const hourIndex = HOURS_MAP[hourString];
+                  return (
+                    <View key={hourString} style={styles.row}>
+                      <View style={[styles.cell, styles.timeCell]}>
+                        <Text style={styles.timeText}>{hourString}</Text>
                       </View>
-                    ))}
-                  </View>
-                ))}
+                      {DAYS.map((day) => (
+                        <View key={`${day}-${hourString}`} style={styles.cell}>
+                          {renderCellContent(day, hourIndex)}
+                        </View>
+                      ))}
+                    </View>
+                  );
+                })}
               </View>
             </ScrollView>
           </ScrollView>
@@ -105,13 +141,21 @@ export default function Schedule() {
           )}
         </View>
 
+        {/* --- Navigation Button (Back to Map) --- */}
         <TouchableOpacity
             style={toggleButtonStyle.toggleButton}
-            onPress={() => router.push('/')}
+            onPress={() => router.back()}
             accessibilityLabel="Go to Map"
         >
             <FontAwesome name="map" size={22} color="#fff" />
         </TouchableOpacity>
+
+        {/* --- Upload Schedule Modal --- */}
+        <UploadScheduleModal
+          visible={isUploadModalVisible}
+          onClose={() => setIsUploadModalVisible(false)}
+          onUpload={handleUploadConfirm}
+        />
       </View>
     </SafeAreaView>
   );
@@ -141,43 +185,84 @@ const styles = StyleSheet.create({
   gridContainer: {
     flex: 1,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 5,
+    overflow: 'hidden', // Ensures inner borders don't spill
   },
   grid: {
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderColor: '#333',
   },
   row: {
     flexDirection: 'row',
-    minHeight: 40,
+    height: CELL_HEIGHT, 
   },
   cell: {
-    minWidth: 55,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
+    width: CELL_MIN_WIDTH,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 4,
+    padding: 2,
+    position: 'relative',
+    zIndex: 1,
   },
   timeCell: {
-    minWidth: 60,
+    width: TIME_COLUMN_WIDTH,
     backgroundColor: '#f9f9f9',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 5,
   },
   headerCell: {
     backgroundColor: '#f0f0f0',
     height: 40,
     minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerText: {
     fontWeight: '600',
     fontSize: 14,
   },
   timeText: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#666',
     textAlign: 'center',
   },
+
+  scheduleEntry: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#ADD8E6',
+    borderRadius: 4,
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    //opacity: 0.9,
+  },
+  scheduleEntrySubject: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  scheduleEntryType: {
+     fontSize: 9,
+     fontWeight: '600',
+     color: '#555',
+     textAlign: 'center',
+     marginBottom: 2,
+  },
+  scheduleEntryLocation: {
+    fontSize: 8,
+    color: '#555',
+    textAlign: 'center',
+  },
+
   actionContainer: {
     zIndex: 10,
     marginBottom: 70,
@@ -200,8 +285,7 @@ const styles = StyleSheet.create({
   },
   dropdownMenu: {
     position: 'absolute',
-    // top: 50,
-    bottom: '110%', //opens upwards
+    bottom: '110%',
     left: 0,
     width: 200,
     backgroundColor: 'white',
