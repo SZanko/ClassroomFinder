@@ -88,7 +88,7 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
       <TouchableOpacity 
         style={[styles.selector, !selectedBuilding && styles.disabledSelector]} 
         onPress={() => openModal('ROOM')}
-        activeOpacity={!selectedBuilding ? 1 : 0.2} // Disable tap effect if disabled
+        activeOpacity={selectedBuilding ? 0.2 : 1} // Disable tap effect if disabled
       >
         <Text style={selectedRoom ? styles.selectorText : styles.placeholderText}>
           {selectedRoom || (selectedBuilding ? "Select Room" : "Select Building First")}
