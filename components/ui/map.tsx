@@ -12,8 +12,8 @@ import {useEffect, useState} from "react";
 import osmtogeojson from "osmtogeojson";
 import {FeatureCollection, Point, Polygon} from "geojson";
 
-import polygons from "../../assets/data/rooms_polygons.json";
-import centers  from "../../assets/data/rooms_centers.json";
+import polygons from "@/assets/data/rooms_polygons.json";
+import centers  from "@/assets/data/rooms_centers.json";
 
 
 const {MAPTILER_API_KEY} = Constants.expoConfig?.extra ?? {};

@@ -8,17 +8,82 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SelectionModal } from '@/components/modals/selectionmodal';
+type RoomEntry = { ref?: string; name?: string; center: [number, number] };
+type RoomsIndex = Record<string, RoomEntry[]>;
 
-// Mock Data 
-const BUILDING_DATA: Record<string, string[]> = {
-  'II': ['128', 'Lab 120'],
+import roomsIndexRaw from '@/assets/data/rooms_index.json';
+
+const roomsIndex = roomsIndexRaw as unknown as RoomsIndex;
+
+// Mock Data
+const MANUAL: Record<string, string[]> = {
   'VII': ['1A', '2A', '2B'],
   'Library': ['Study Room 1', 'Main Floor', 'Quiet Zone'],
 };
 
+function mergeData(a: Record<string,string[]>, b: Record<string,string[]>) {
+  const out: Record<string,string[]> = { ...a };
+  for (const [k, arr] of Object.entries(b)) {
+    out[k] = Array.from(new Set([...(out[k] ?? []), ...arr]))
+        .sort((x, y) => x.localeCompare(y, undefined, { numeric: true }));
+  }
+  return out;
+}
+
+
+const BUILDING_DATA: Record<string, string[]> = mergeData(
+    buildBuildingData(roomsIndex),
+    MANUAL
+);
+
+
 interface SearchWidgetProps {
   onSearch: (building: string | null, room: string | null) => void;
 }
+
+function normalizeBuildingName(name: string): string {
+  const s = name.trim();
+
+  // direct aliases you care about
+  const ALIASES: Record<string, string> = {
+    'Edification II': 'II',
+    'Edifício II': 'II',
+    'Edificio II': 'II',
+    'Building II': 'II',
+    'Edifício 2': 'II',
+    'II': 'II',
+  };
+  if (ALIASES[s]) return ALIASES[s];
+
+  // try to extract roman numeral
+  const m = s.match(/\b([IVXLCDM]+)\b/i);
+  if (m) return m[1].toUpperCase();
+
+  return s;
+}
+
+function buildBuildingData(index: RoomsIndex): Record<string, string[]> {
+  const out: Record<string, Set<string>> = {};
+
+  for (const [rawName, rooms] of Object.entries(index)) {
+    const key = normalizeBuildingName(rawName);
+    if (!out[key]) out[key] = new Set<string>();
+
+    for (const r of rooms) {
+      const label = (r.ref || r.name || '').trim();
+      if (label) out[key].add(label);
+    }
+  }
+
+  return Object.fromEntries(
+      Object.entries(out).map(([k, set]) => [
+        k,
+        Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+      ]),
+  );
+}
+
+
 
 export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
   const [expanded, setExpanded] = useState(false);
