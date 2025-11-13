@@ -6,7 +6,6 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {Link, router} from 'expo-router';
-import {MapView} from "@maplibre/maplibre-react-native";
 import {FontAwesome} from "@expo/vector-icons";
 import { toggleButtonStyle } from '@/components/ui/toggle-tab-button';
 import { NavigationMap } from '@/components/ui/map';
