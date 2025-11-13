@@ -1,5 +1,5 @@
 {
-  description = "App for IPM in Nova FCT";
+  description = "App for IPM at Nova FCT";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
@@ -49,6 +49,10 @@
           pinnedJDK
           sdk
           pkg-config
+
+          nodejs
+          bun
+          node2nix
         ];
 
         JAVA_HOME = pinnedJDK;
