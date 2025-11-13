@@ -8,11 +8,11 @@ export function ToggleTabButton() {
 export const toggleButtonStyle = StyleSheet.create({
     toggleButton: {
         position: 'absolute',
-        bottom: 80,
-        right: 80,
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        bottom: 70,
+        right: 30,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         backgroundColor: '#007AFF',
         alignItems: 'center',
         justifyContent: 'center',
