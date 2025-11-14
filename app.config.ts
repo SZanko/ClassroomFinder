@@ -11,7 +11,10 @@ export default {
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.ipmapp"
+      "bundleIdentifier": "at.zanko.fct.classroomfinder",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to navigate to the selected room."
+      },
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +25,8 @@ export default {
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.ipmapp"
+      "package": "at.zanko.fct.classroomfinder",
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
     },
     "web": {
       "output": "static",

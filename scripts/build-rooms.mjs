@@ -138,8 +138,8 @@ function buildSearchIndex(roomCentersFC, buildingPolysFC) {
     const buildingsFC = osmtogeojson(buildingsJson);
     const searchIndex = buildSearchIndex(centersFC, buildingsFC);
 
-    await fs.writeFile(path.join(outDir, "rooms_polygons.json"), JSON.stringify(polygonsFC));
-    await fs.writeFile(path.join(outDir, "rooms_centers.json"), JSON.stringify(centersFC));
+    await fs.writeFile(path.join(outDir, "rooms_polygons.json"), JSON.stringify(polygonsFC, null, 2));
+    await fs.writeFile(path.join(outDir, "rooms_centers.json"), JSON.stringify(centersFC, null, 2));
     await fs.writeFile(path.join(outDir, "rooms_index.json"), JSON.stringify(searchIndex, null, 2));
 
     console.log("✅ Wrote rooms_polygons.json, rooms_centers.json, rooms_index.json");
