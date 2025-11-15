@@ -10,31 +10,34 @@ import {FontAwesome} from "@expo/vector-icons";
 import { toggleButtonStyle } from '@/components/ui/toggle-tab-button';
 import { NavigationMap } from '@/components/ui/map';
 import React, { useState } from 'react';
-import { SearchWidget } from '@/components/ui/search-bar';
+import { SearchWidget, SearchCriteria } from '@/components/ui/search-bar';
 
 export default function MapScreen() {
-  const handleCompoundSearch = (building: string | null, room: string | null) => {
-      console.log("Starting navigation to:", building, room);
+  const handleCompoundSearch = (criteria: SearchCriteria) => {
+    if (criteria.type === 'location') {
+      console.log("Searching by LOCATION:", criteria.building, criteria.room);
+    } else {
+      console.log("Searching by NAME:", criteria.query);
+    }
   };
 
 
   return (
-      <View style={styles.container}>
-
-          <NavigationMap />
-          <View style={styles.searchContainer}>
-            <SearchWidget onSearch={handleCompoundSearch} />
-          </View>
-
-
-        <TouchableOpacity
-            style={toggleButtonStyle.toggleButton}
-            onPress={() => router.push('/schedule')}
-            accessibilityLabel="Go to schedule"
-        >
-          <FontAwesome name="calendar" size={22} color="#fff" />
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <NavigationMap />
+      <View style={styles.searchContainer}>
+        {/* This component call remains the same */}
+        <SearchWidget onSearch={handleCompoundSearch} />
       </View>
+
+      <TouchableOpacity
+        style={toggleButtonStyle.toggleButton}
+        onPress={() => router.push('/schedule')}
+        accessibilityLabel="Go to schedule"
+      >
+        <FontAwesome name="calendar" size={22} color="#fff" />
+      </TouchableOpacity>
+    </View>
   );
 }
 
