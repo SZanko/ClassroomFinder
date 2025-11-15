@@ -1,0 +1,29 @@
+{
+  "levels": ["0", "1"],
+  "nodes": {
+    "0:a": { "lng": 0,        "lat": 0,         "level": "0" },
+    "0:b": { "lng": 0.00010,  "lat": 0,         "level": "0" },
+    "0:c": { "lng": 0.00020,  "lat": 0,         "level": "0" },
+    "0:stairs": { "lng": 0.00020, "lat": 0.00005, "level": "0", "tags": { "highway": "steps" } },
+    "1:stairs": { "lng": 0.00020, "lat": 0.00005, "level": "1", "tags": { "highway": "steps" } },
+    "1:d": { "lng": 0.00025,  "lat": 0.00005,   "level": "1" }
+  },
+  "edges": [
+    { "from": "0:a", "to": "0:b", "w": 5,  "type": "corridor" },
+    { "from": "0:b", "to": "0:c", "w": 5,  "type": "corridor" },
+    { "from": "0:c", "to": "0:stairs", "w": 4, "type": "corridor" },
+    { "from": "0:stairs", "to": "1:stairs", "w": 10, "type": "highway" },
+    { "from": "1:stairs", "to": "1:d", "w": 3, "type": "corridor" },
+
+    { "from": "0:b", "to": "0:a", "w": 5 },
+    { "from": "0:c", "to": "0:b", "w": 5 },
+    { "from": "0:stairs", "to": "0:c", "w": 4 },
+    { "from": "1:stairs", "to": "0:stairs", "w": 10 },
+    { "from": "1:d", "to": "1:stairs", "w": 3 }
+  ],
+  "rooms": {
+    "R-A": { "node": "0:a", "level": "0", "center": [0, 0] },
+    "R-D": { "node": "1:d", "level": "1", "center": [0.00025, 0.00005] }
+  },
+  "entrances": [{ "node": "0:a", "level": "0" }]
+}

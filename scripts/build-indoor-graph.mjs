@@ -14,7 +14,6 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import fetch from 'node-fetch';
 import pointOnFeature from '@turf/point-on-feature';
 
 // osmtogeojson interop (CJS/ESM safe)
