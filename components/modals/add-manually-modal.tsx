@@ -64,7 +64,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
         case 'ROOM': setRoom(item); break;
       }
       setModalVisible(false);
-   };
+    };
 
    const getModalData = () => {
        switch (modalType) {
@@ -73,7 +73,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
         case 'ROOM': return availableRooms;
         default: return [];
       }
-   };
+    };
 
     const resetForm = () => {
       setSubject('');
