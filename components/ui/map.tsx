@@ -35,12 +35,26 @@ const corridorFillExpr = [
 
 export const ROOM_FILL_STYLE: FillLayerStyle = {
     fillColor: corridorFillExpr as unknown as any, // or cast to Expression if exported
-    fillOpacity: 0.4,
+    fillOpacity: [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        0, 0,      // invisible when zoomed out
+        16.5, 0,   // still invisible
+        17, 0.4,   // your original opacity from zoom 17+
+    ],
 };
 
 const ROOM_OUTLINE_STYLE = {
     lineColor: '#FF0000',
-    lineWidth: 1,
+    lineWidth: [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        0, 0,      // no outline when zoomed out
+        16.5, 0,
+        17, 1,     // original width from zoom 17+
+    ] as any,
 };
 
 const bbox = {
@@ -111,95 +125,6 @@ export function NavigationMap({route}: Readonly<NavigationMapProps>) {
         } as FeatureCollection;
     }, [route]);
 
-    //const [roomPolygons, setRoomPolygons] = useState<FeatureCollection<Polygon> | null>(null);
-    //const [roomCenters,  setRoomCenters]  = useState<FeatureCollection<Point>   | null>(null);
-    //useEffect(() => {
-    //    async function fetchRooms() {
-    //        const endpoints = [
-    //            'https://overpass-api.de/api/interpreter',
-    //            'https://overpass.kumi.systems/api/interpreter',
-    //            'https://overpass.osm.ch/api/interpreter',
-    //        ];
-
-    //        for (const endpoint of endpoints) {
-    //            const url = endpoint + '?data=' + encodeURIComponent(query);
-
-    //            try {
-    //                const res = await fetch(url);
-    //                if (!res.ok) {
-    //                    console.warn(`Overpass ${endpoint} returned ${res.status}`);
-    //                    continue;
-    //                }
-
-    //                const overpassJson = await res.json();
-    //                const fc: any = osmtogeojson(overpassJson);
-
-    //                // Nur Polygon-Features verwenden (MultiPolygon usw. erstmal ignorieren)
-    //                const polygons = fc.features.filter(
-    //                    (f: any) =>
-    //                        f.geometry &&
-    //                        f.geometry.type === 'Polygon' &&
-    //                        Array.isArray(f.geometry.coordinates?.[0])
-    //                );
-
-    //                // Korridore markieren
-    //                polygons.forEach((feat: any) => {
-    //                    const props = feat.properties || {};
-    //                    props.corridor =
-    //                        props.room === 'corridor' ||
-    //                        props.corridor === 'yes' ||
-    //                        props.indoor === 'corridor';
-    //                });
-
-    //                setRoomPolygons({
-    //                    type: 'FeatureCollection',
-    //                    features: polygons,
-    //                });
-
-    //                // Raumzentren für Labels berechnen
-    //                const centerFeatures = polygons.map((f: any) => {
-    //                    const ring = f.geometry.coordinates[0]; // Außenring
-    //                    const sum = ring.reduce(
-    //                        (acc: [number, number], [lon, lat]: [number, number]) => [
-    //                            acc[0] + lon,
-    //                            acc[1] + lat,
-    //                        ],
-    //                        [0, 0]
-    //                    );
-    //                    const n = ring.length || 1;
-    //                    const center: [number, number] = [sum[0] / n, sum[1] / n];
-
-    //                    return {
-    //                        type: 'Feature',
-    //                        geometry: {
-    //                            type: 'Point',
-    //                            coordinates: center,
-    //                        },
-    //                        properties: {
-    //                            ref: f.properties?.ref ?? f.properties?.name ?? '',
-    //                        },
-    //                    };
-    //                });
-
-    //                setRoomCenters({
-    //                    type: 'FeatureCollection',
-    //                    features: centerFeatures,
-    //                });
-
-    //                // Erfolg -> Schleife verlassen
-    //                return;
-    //            } catch (err) {
-    //                console.warn(`Request to ${endpoint} failed:`, err);
-    //            }
-    //        }
-
-    //        console.error('Failed to load rooms from all Overpass endpoints');
-    //    }
-
-    //    // <<< WICHTIG: Funktion auch wirklich aufrufen!
-    //    fetchRooms();
-    //}, []);
-
 
     return (
         <MapView
@@ -232,6 +157,16 @@ export function NavigationMap({route}: Readonly<NavigationMapProps>) {
                             textHaloWidth: 1,
                             symbolPlacement: 'point', // Punktplatzierung im Zentrum
                             textAllowOverlap: true,
+
+                            textOpacity: [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                0, 0,
+                                16.99, 0,
+                                17, 1,
+                                20, 1
+                            ],
                         }}
                     />
                 </ShapeSource>
