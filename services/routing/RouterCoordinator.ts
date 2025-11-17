@@ -7,14 +7,11 @@ import type {
     IndoorGraph,
     NodeId,
 } from './types';
+import {AnySegment} from "@/services/routing/index";
 
 // Strongly type the imported JSON (requires resolveJsonModule in tsconfig)
 //const indoorGraph: IndoorGraph = rawGraph as unknown as IndoorGraph;
 //const defaultGraph: IndoorGraph = rawGraph as unknown as IndoorGraph;
-
-export type AnySegment =
-    | { type: 'outdoor'; line: LngLat[] }
-    | { type: 'indoor'; level: string; line: LngLat[] };
 
 export class RouterCoordinator {
     private readonly graph: IndoorGraph;

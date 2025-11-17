@@ -1,5 +1,5 @@
 import {
-    Camera,
+    Camera, CameraRef,
     FillLayer,
     FillLayerStyle,
     LineLayer,
@@ -8,12 +8,13 @@ import {
     SymbolLayer
 } from "@maplibre/maplibre-react-native";
 import Constants from "expo-constants";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import osmtogeojson from "osmtogeojson";
 import {FeatureCollection, Point, Polygon} from "geojson";
 
 import polygons from "@/assets/data/rooms_polygons.json";
-import centers  from "@/assets/data/rooms_centers.json";
+import centers from "@/assets/data/rooms_centers.json";
+import {AnySegment} from "@/services/routing";
 
 
 const {MAPTILER_API_KEY} = Constants.expoConfig?.extra ?? {};
@@ -49,8 +50,9 @@ const bbox = {
     east: -9.203
 };
 
+
 const roomPolygons = polygons as FeatureCollection<Polygon>;
-const roomCenters  = centers  as FeatureCollection<Point>;
+const roomCenters = centers as FeatureCollection<Point>;
 
 //const query = `
 //[out:json][timeout:25];
@@ -64,7 +66,50 @@ const query = `[out:json][timeout:25];
   way["indoor"="room"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
   out geom tags;`;
 
-export function NavigationMap() {
+type NavigationMapProps = {
+    route?: AnySegment[] | null;
+};
+
+export function NavigationMap({route}: Readonly<NavigationMapProps>) {
+    const cameraRef = useRef<CameraRef | null>(null);
+
+
+    useEffect(() => {
+        if (!route || route.length === 0) return;
+
+        // Focus camera on the first coordinate of the first segment
+        const firstSeg = route[0];
+        const firstPoint = firstSeg.line[0];
+        if (firstPoint && cameraRef.current) {
+            cameraRef.current.setCamera({
+                centerCoordinate: firstPoint,
+                zoomLevel: 18,
+                animationDuration: 800,
+            });
+        }
+    }, [route]);
+
+
+
+    const routeCollection = useMemo(() => {
+        if (!route || route.length === 0) return null;
+
+        return {
+            type: 'FeatureCollection',
+            features: route.map((seg, i) => ({
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: seg.line,
+                },
+                properties: {
+                    id: i,
+                    type: seg.type,
+                    level: seg.type === 'indoor' ? seg.level : null,
+                },
+            })),
+        } as FeatureCollection;
+    }, [route]);
 
     //const [roomPolygons, setRoomPolygons] = useState<FeatureCollection<Polygon> | null>(null);
     //const [roomCenters,  setRoomCenters]  = useState<FeatureCollection<Point>   | null>(null);
@@ -163,6 +208,7 @@ export function NavigationMap() {
         >
 
             <Camera
+                ref={cameraRef}
                 defaultSettings={{
                     centerCoordinate: [-9.206151, 38.661847],
                     zoomLevel: 16
@@ -186,6 +232,20 @@ export function NavigationMap() {
                             textHaloWidth: 1,
                             symbolPlacement: 'point', // Punktplatzierung im Zentrum
                             textAllowOverlap: true,
+                        }}
+                    />
+                </ShapeSource>
+            )}
+
+            {routeCollection && (
+                <ShapeSource id="route" shape={routeCollection}>
+                    <LineLayer
+                        id="route-line"
+                        style={{
+                            lineWidth: 4,
+                            lineColor: '#007AFF',
+                            lineJoin: 'round',
+                            lineCap: 'round',
                         }}
                     />
                 </ShapeSource>

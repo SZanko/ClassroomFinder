@@ -50,6 +50,8 @@
           sdk
           pkg-config
 
+          bundletool
+
           nodejs
           bun
           node2nix
