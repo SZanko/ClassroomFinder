@@ -54,6 +54,7 @@ export default {
     },
     "extra": {
       "MAPTILER_API_KEY": process.env.MAPTILER_API_KEY,
+      "GRAPHHOPPER_API_KEY": process.env.GRAPHHOPPER_API_KEY,
       "router": {},
       "eas": {
         "projectId": "69427882-18a0-455f-903e-7d9e1e4c63f1"

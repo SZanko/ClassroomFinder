@@ -11,16 +11,17 @@ import {toggleButtonStyle} from '@/components/ui/toggle-tab-button';
 import {NavigationMap} from '@/components/ui/map';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {SearchWidget} from '@/components/ui/search-bar';
-import {AnySegment, coordinator, graph} from "@/services/routing";
+import {coordinator, graph} from "@/services/routing";
 import {
     Camera,
     CameraRef
 } from "@maplibre/maplibre-react-native";
 import { GeoPoint } from '@/hooks/use-current-location';
+import {AnySegment, LngLat} from "@/services/routing/types";
 
 
 const startRoom='127'
-const startRoomCoordinates = { longitude: -9.206151, latitude: 38.661847}
+const startRoomCoordinates:LngLat = [-9.205344, 38.662565]
 const endRoom='116'
 
 export default function MapScreen() {
@@ -56,11 +57,31 @@ export default function MapScreen() {
   };
 
 
+    //useEffect(() => {
+    //    //const segments = coordinator.routeRoomToRoom(startRoom, endRoom);
+    //    //const segments = coordinator.routeGpsToRoom(startRoomCoordinates, endRoom);
+    //    setRoute(segments);
+    //}, []);
+
     useEffect(() => {
-        const segments = coordinator.routeRoomToRoom(startRoom, endRoom);
-        //const segments = coordinator.routeGpsToRoom(startRoomCoordinates, endRoom);
-        setRoute(segments);
-    }, []);
+        let cancelled = false;
+
+        (async () => {
+            try {
+                const segments = await coordinator.outdoor.routeOutdoorToOutdoor(
+                    "Building VIII",
+                    "Building II",
+                );
+                if (!cancelled) setRoute(segments);
+            } catch (e) {
+                console.error(e);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [startRoomCoordinates, endRoom]);
 
     return (
         <View style={styles.container}>

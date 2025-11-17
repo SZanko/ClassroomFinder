@@ -6,6 +6,258 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          -9.204946709090908,
+          38.66266469090909
+        ]
+      },
+      "properties": {
+        "ref": "Sala Ágora",
+        "name": "Sala Ágora"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2049522,
+          38.66271651428571
+        ]
+      },
+      "properties": {
+        "ref": "Sala Verde",
+        "name": "Sala Verde"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.204880985714285,
+          38.66259924285714
+        ]
+      },
+      "properties": {
+        "ref": "",
+        "name": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.204908642857143,
+          38.66261057142857
+        ]
+      },
+      "properties": {
+        "ref": "",
+        "name": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.20498645,
+          38.66261433333333
+        ]
+      },
+      "properties": {
+        "ref": "",
+        "name": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2054588,
+          38.662770124999994
+        ]
+      },
+      "properties": {
+        "ref": "Sala Laranja",
+        "name": "Sala Laranja"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.20570267,
+          38.662687039999994
+        ]
+      },
+      "properties": {
+        "ref": "Serviços Internos",
+        "name": "Serviços Internos"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.205553066666667,
+          38.66269715
+        ]
+      },
+      "properties": {
+        "ref": "",
+        "name": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.205615716666665,
+          38.662624916666665
+        ]
+      },
+      "properties": {
+        "ref": "Escadas de Emergência",
+        "name": "Escadas de Emergência"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2055554,
+          38.662633619999994
+        ]
+      },
+      "properties": {
+        "ref": "",
+        "name": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2055086,
+          38.66262814
+        ]
+      },
+      "properties": {
+        "ref": "",
+        "name": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.205087840000001,
+          38.66260048
+        ]
+      },
+      "properties": {
+        "ref": "01",
+        "name": "Gabinete de Estudo em Grupo"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.2051497,
+          38.6626014
+        ]
+      },
+      "properties": {
+        "ref": "02",
+        "name": "Gabinete de Estudo em Grupo"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.205211539999999,
+          38.66260234
+        ]
+      },
+      "properties": {
+        "ref": "03",
+        "name": "Gabinete de Estudo em Grupo"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.205273440000003,
+          38.662603239999996
+        ]
+      },
+      "properties": {
+        "ref": "04",
+        "name": "Gabinete de Estudo em Grupo"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.204981528571427,
+          38.66271687142857
+        ]
+      },
+      "properties": {
+        "ref": "Sala de Revistas",
+        "name": "Sala de Revistas"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.205428275000001,
+          38.6627313625
+        ]
+      },
+      "properties": {
+        "ref": "Sala Azul",
+        "name": "Sala Azul"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.205683500000001,
+          38.66274785
+        ]
+      },
+      "properties": {
+        "ref": "Sala Azul",
+        "name": "Sala Azul"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           -9.203467469999998,
           38.660682109999996
         ]

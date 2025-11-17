@@ -1,13 +1,14 @@
-import { IndoorRouter } from './IndoorRouter';
-import { OutdoorRouter } from './OutdoorRouter';
+import {IndoorRouter} from './IndoorRouter';
+import {OutdoorRouter} from './OutdoorRouter';
 
 //import rawGraph from '@/assets/data/indoor-graph.json';
 import type {
     LngLat,
     IndoorGraph,
     NodeId,
+    OutdoorSegment,
+    Room, AnySegment
 } from './types';
-import {AnySegment} from "@/services/routing/index";
 
 // Strongly type the imported JSON (requires resolveJsonModule in tsconfig)
 //const indoorGraph: IndoorGraph = rawGraph as unknown as IndoorGraph;
@@ -16,7 +17,7 @@ import {AnySegment} from "@/services/routing/index";
 export class RouterCoordinator {
     private readonly graph: IndoorGraph;
     private readonly indoor: IndoorRouter;
-    private readonly outdoor : OutdoorRouter;
+    public readonly outdoor: OutdoorRouter;
 
     // 👇 allow tests to inject a graph and/or outdoor service
     constructor(
@@ -62,6 +63,8 @@ export class RouterCoordinator {
             [entrance.lng, entrance.lat]
         ); // returns { type:'outdoor', line: LngLat[] }
 
+        console.log(outdoorSeg);
+
         // Indoor leg(s)
         const indoorSegs = this.indoor.routeEntranceToRoom(entranceId, roomKey);
         // indoorSegs is RouteSegment[] i.e. {type:'indoor', level, line}
@@ -72,5 +75,10 @@ export class RouterCoordinator {
     /** Room → Room (pure indoor) */
     routeRoomToRoom(fromRoomKey: string, toRoomKey: string): AnySegment[] {
         return this.indoor.routeRoomToRoom(fromRoomKey, toRoomKey);
+    }
+
+    async routeOutdoorToOutdoor(from: LngLat, to: LngLat): Promise<OutdoorSegment[]> {
+        const seg = await this.outdoor.walkingRoute(from, to);
+        return [seg];
     }
 }

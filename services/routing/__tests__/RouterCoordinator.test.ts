@@ -1,8 +1,8 @@
 // services/routing/__tests__/RouterCoordinator.test.ts
 import { RouterCoordinator } from '../RouterCoordinator';
-import type { AnySegment } from '../RouterCoordinator';
 import mini from './testing-graph.json';
 import type { IndoorGraph, LngLat } from '../types';
+import {AnySegment} from "@/services/routing";
 
 // Mock OutdoorRouter instance passed to coordinator (no network)
 class OutdoorMock {

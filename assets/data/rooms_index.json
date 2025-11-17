@@ -1,5 +1,103 @@
 {
-  "Edifício II": [
+  "Biblioteca FCT/UNL": [
+    {
+      "ref": "01",
+      "name": "Gabinete de Estudo em Grupo",
+      "center": [
+        -9.205087840000001,
+        38.66260048
+      ]
+    },
+    {
+      "ref": "02",
+      "name": "Gabinete de Estudo em Grupo",
+      "center": [
+        -9.2051497,
+        38.6626014
+      ]
+    },
+    {
+      "ref": "03",
+      "name": "Gabinete de Estudo em Grupo",
+      "center": [
+        -9.205211539999999,
+        38.66260234
+      ]
+    },
+    {
+      "ref": "04",
+      "name": "Gabinete de Estudo em Grupo",
+      "center": [
+        -9.205273440000003,
+        38.662603239999996
+      ]
+    },
+    {
+      "ref": "Escadas de Emergência",
+      "name": "Escadas de Emergência",
+      "center": [
+        -9.205615716666665,
+        38.662624916666665
+      ]
+    },
+    {
+      "ref": "Sala Ágora",
+      "name": "Sala Ágora",
+      "center": [
+        -9.204946709090908,
+        38.66266469090909
+      ]
+    },
+    {
+      "ref": "Sala Azul",
+      "name": "Sala Azul",
+      "center": [
+        -9.205428275000001,
+        38.6627313625
+      ]
+    },
+    {
+      "ref": "Sala Azul",
+      "name": "Sala Azul",
+      "center": [
+        -9.205683500000001,
+        38.66274785
+      ]
+    },
+    {
+      "ref": "Sala de Revistas",
+      "name": "Sala de Revistas",
+      "center": [
+        -9.204981528571427,
+        38.66271687142857
+      ]
+    },
+    {
+      "ref": "Sala Laranja",
+      "name": "Sala Laranja",
+      "center": [
+        -9.2054588,
+        38.662770124999994
+      ]
+    },
+    {
+      "ref": "Sala Verde",
+      "name": "Sala Verde",
+      "center": [
+        -9.2049522,
+        38.66271651428571
+      ]
+    },
+    {
+      "ref": "Serviços Internos",
+      "name": "Serviços Internos",
+      "center": [
+        -9.20570267,
+        38.662687039999994
+      ]
+    }
+  ],
+  "Building II": [
     {
       "ref": "101-A",
       "name": "Lab 101-A",

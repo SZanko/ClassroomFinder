@@ -14,7 +14,7 @@ import {FeatureCollection, Point, Polygon} from "geojson";
 
 import polygons from "@/assets/data/rooms_polygons.json";
 import centers from "@/assets/data/rooms_centers.json";
-import {AnySegment} from "@/services/routing";
+import {AnySegment} from "@/services/routing/types";
 
 
 const {MAPTILER_API_KEY} = Constants.expoConfig?.extra ?? {};
