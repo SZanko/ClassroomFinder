@@ -11,6 +11,14 @@ import { toggleButtonStyle } from '@/components/ui/toggle-tab-button';
 import { NavigationMap } from '@/components/ui/map';
 import React, { useState } from 'react';
 import { SearchWidget, SearchCriteria } from '@/components/ui/search-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const floatingButtonStyle = {
+  position: 'absolute' as const,
+  bottom: 20,
+  right: 20,
+  zIndex: 20,
+};
 
 export default function MapScreen() {
   const handleCompoundSearch = (criteria: SearchCriteria) => {
@@ -23,21 +31,22 @@ export default function MapScreen() {
 
 
   return (
-    <View style={styles.container}>
-      <NavigationMap />
-      <View style={styles.searchContainer}>
-        {/* This component call remains the same */}
-        <SearchWidget onSearch={handleCompoundSearch} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <NavigationMap />
+        <View style={styles.searchContainer}>
+          {/* This component call remains the same */}
+          <SearchWidget onSearch={handleCompoundSearch} />
+        </View>
 
-      <TouchableOpacity
-        style={toggleButtonStyle.toggleButton}
-        onPress={() => router.push('/schedule')}
-        accessibilityLabel="Go to schedule"
-      >
-        <FontAwesome name="calendar" size={22} color="#fff" />
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={[toggleButtonStyle.toggleButton, floatingButtonStyle]}
+          onPress={() => router.push('/schedule')}
+        >
+          <FontAwesome name="calendar" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>`
+    </SafeAreaView>
   );
 }
 

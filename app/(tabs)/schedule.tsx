@@ -27,6 +27,13 @@ const CELL_MIN_WIDTH = (width - 40 - 60) / DAYS.length;
 const CELL_HEIGHT = 40;
 const TIME_COLUMN_WIDTH = 60;
 
+const floatingButtonStyle = {
+  position: 'absolute' as const,
+  bottom: 20,
+  right: 20,
+  zIndex: 20,
+};
+
 export default function Schedule() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
@@ -207,11 +214,10 @@ export default function Schedule() {
 
         {/* --- Navigation Button (Back to Map) --- */}
         <TouchableOpacity
-            style={toggleButtonStyle.toggleButton}
-            onPress={() => router.back()}
-            accessibilityLabel="Go to Map"
+          style={[toggleButtonStyle.toggleButton, floatingButtonStyle]}
+          onPress={() => router.back()}
         >
-            <FontAwesome name="map" size={22} color="#fff" />
+          <FontAwesome name="map" size={22} color="#fff" />
         </TouchableOpacity>
 
         {/* --- Upload Schedule Modal --- */}
