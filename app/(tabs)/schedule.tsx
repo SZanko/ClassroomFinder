@@ -17,6 +17,9 @@ import { ProfileIcon } from '@/components/ui/profile_icon_button';
 import { UploadScheduleModal } from '@/components/modals/uploadScheduleModal';
 import { ScheduleEntry, HOURS_MAP, DAYS } from '@/assets/data/sample-schedule'; 
 import { AddManualScheduleModal } from '@/components/modals/add-manually-modal';
+import { ScheduleEntryModal } from '@/components/modals/schedule-entry-modal';
+import { EditScheduleModal } from '@/components/modals/edit-schedule-modal';
+
 
 const { width } = Dimensions.get('window');
 
@@ -24,11 +27,66 @@ const CELL_MIN_WIDTH = (width - 40 - 60) / DAYS.length;
 const CELL_HEIGHT = 40;
 const TIME_COLUMN_WIDTH = 60;
 
+const floatingButtonStyle = {
+  position: 'absolute' as const,
+  bottom: 20,
+  right: 20,
+  zIndex: 20,
+};
+
 export default function Schedule() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
   const [isAddManualModalVisible, setIsAddManualModalVisible] = useState(false);
   const [currentSchedule, setCurrentSchedule] = useState<ScheduleEntry[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<ScheduleEntry | null>(null);
+  const [isEntryModalVisible, setIsEntryModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+
+  const handleEntryPress = (entry: ScheduleEntry) => {
+    setSelectedEntry(entry);
+    setIsEntryModalVisible(true);
+  };
+
+  const handleCloseEntryModal = () => {
+    setIsEntryModalVisible(false);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalVisible(false);
+    setSelectedEntry(null);
+  };
+
+  const handleDelete = () => {
+    if (!selectedEntry) return;
+    setCurrentSchedule(prev => prev.filter(item => item.id !== selectedEntry.id));
+    Alert.alert("Deleted", "Class removed from schedule.");
+    handleCloseEntryModal();
+  };
+
+  const handleEditConfirm = (updatedEntry: ScheduleEntry) => {
+    setCurrentSchedule(prev => 
+      prev.map(e => (e.id === updatedEntry.id ? updatedEntry : e))
+    );
+    Alert.alert("Success", "Class updated.");
+  };
+
+  const handleEdit = () => {
+    if (!selectedEntry) return;
+    setIsEditModalVisible(true); 
+    setIsEntryModalVisible(false);
+    };
+
+  const handleNavigate = () => {
+    if (!selectedEntry) return;
+    // This will navigate to the Map screen and pass the building/room as params.
+    // You will need to update MapScreen to receive these params.
+    router.push({
+      pathname: '/',
+      params: { building: selectedEntry.building, room: selectedEntry.room }
+    });
+    handleCloseEntryModal();
+  };
 
   const handleMenuOption = (option: string) => {
     setIsMenuOpen(false);
@@ -65,15 +123,18 @@ export default function Schedule() {
     );
     if (!entry) return null;
 
-    // Calculate height based on duration
     const itemHeight = CELL_HEIGHT * entry.duration;
 
     return (
-      <View style={[styles.scheduleEntry, { height: itemHeight - 2 }]}> 
+      <TouchableOpacity
+        style={[styles.scheduleEntry, { height: itemHeight - 2 }]}
+        onPress={() => handleEntryPress(entry)}
+        activeOpacity={0.8}
+      > 
         <Text style={styles.scheduleEntrySubject}>{entry.subject}{entry.type}</Text>
         <Text style={styles.scheduleEntryType}>({entry.type.toUpperCase()})</Text>
         <Text style={styles.scheduleEntryLocation}>{entry.building}/{entry.room}</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -153,11 +214,10 @@ export default function Schedule() {
 
         {/* --- Navigation Button (Back to Map) --- */}
         <TouchableOpacity
-            style={toggleButtonStyle.toggleButton}
-            onPress={() => router.back()}
-            accessibilityLabel="Go to Map"
+          style={[toggleButtonStyle.toggleButton, floatingButtonStyle]}
+          onPress={() => router.back()}
         >
-            <FontAwesome name="map" size={22} color="#fff" />
+          <FontAwesome name="map" size={22} color="#fff" />
         </TouchableOpacity>
 
         {/* --- Upload Schedule Modal --- */}
@@ -172,6 +232,25 @@ export default function Schedule() {
           onClose={() => setIsAddManualModalVisible(false)}
           onAdd={handleAddManualConfirm}
           currentSchedule={currentSchedule}
+        />
+
+        {selectedEntry && (
+          <EditScheduleModal
+          visible={isEditModalVisible}
+          onClose={handleCloseEditModal}
+          onSubmit={handleEditConfirm}
+          currentSchedule={currentSchedule}
+          entryToEdit={selectedEntry}
+          />
+        )}
+
+        <ScheduleEntryModal
+          visible={isEntryModalVisible}
+          entry={selectedEntry}
+          onClose={handleCloseEntryModal}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+          onNavigate={handleNavigate}
         />
       </View>
     </SafeAreaView>

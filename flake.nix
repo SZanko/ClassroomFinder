@@ -18,7 +18,8 @@
 
       pinnedJDK = pkgs.jdk17;
       buildToolsVersion = "34.0.0";
-      ndkVersion = "25.1.8937393";
+      #ndkVersion = "25.1.8937393";
+      ndkVersion = "27.1.12297006";
       androidComposition = pkgs.androidenv.composeAndroidPackages {
         cmdLineToolsVersion = "8.0";
         toolsVersion = "26.1.1";
@@ -58,10 +59,11 @@
         ];
 
         JAVA_HOME = pinnedJDK;
-        ANDROID_SDK_ROOT = "${androidComposition.androidsdk}/libexec/android-sdk";
+        ANDROID_HOME = "${androidComposition.androidsdk}/libexec/android-sdk";
+        ANDROID_SDK_ROOT = ANDROID_HOME;
         ANDROID_NDK_ROOT = "${ANDROID_SDK_ROOT}/ndk-bundle";
 
-        GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_SDK_ROOT}/build-tools/${buildToolsVersion}/aapt2";
+        GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_HOME}/build-tools/${buildToolsVersion}/aapt2";
       };
     });
 }

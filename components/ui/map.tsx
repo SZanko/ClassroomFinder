@@ -4,13 +4,17 @@ import {
     FillLayerStyle,
     LineLayer,
     MapView,
+    MapViewRef,
+    MarkerView,
     ShapeSource,
     SymbolLayer
 } from "@maplibre/maplibre-react-native";
 import Constants from "expo-constants";
-import {useEffect, useMemo, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import osmtogeojson from "osmtogeojson";
 import {FeatureCollection, Point, Polygon} from "geojson";
+import {ActivityIndicator, View, StyleSheet, Text} from 'react-native';
+import * as Location from 'expo-location';
 
 import polygons from "@/assets/data/rooms_polygons.json";
 import centers from "@/assets/data/rooms_centers.json";
@@ -86,9 +90,53 @@ type NavigationMapProps = {
 
 export function NavigationMap({route}: Readonly<NavigationMapProps>) {
     const cameraRef = useRef<CameraRef | null>(null);
+    const mapRef = useRef<MapViewRef | null>(null);
+    const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 
     useEffect(() => {
+        let subscription: Location.LocationSubscription | null = null;
+
+        (async () => {
+            try {
+                const {status} = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    setErrorMsg('Permission to access location was denied.');
+                    setLoading(false);
+                    return;
+                }
+
+                subscription = await Location.watchPositionAsync(
+                    {
+                        accuracy: Location.Accuracy.Highest,
+                        timeInterval: 1000,
+                        distanceInterval: 1,
+                    },
+                    (pos: Location.LocationObject) => {
+                        const coords = {
+                            latitude: pos.coords.latitude,
+                            longitude: pos.coords.longitude,
+                        };
+                        setLocation(coords);
+
+                        if (cameraRef.current) {
+                            cameraRef.current.setCamera({
+                                centerCoordinate: [coords.longitude, coords.latitude],
+                                animationDuration: 500,
+                            });
+                        }
+                    }
+                );
+
+                setLoading(false);
+            } catch (err: any) {
+                setErrorMsg(err?.message ?? 'Failed to get location');
+                setLoading(false);
+            }
+        })();
+
         if (!route || route.length === 0) return;
 
         // Focus camera on the first coordinate of the first segment
@@ -101,8 +149,11 @@ export function NavigationMap({route}: Readonly<NavigationMapProps>) {
                 animationDuration: 800,
             });
         }
-    }, [route]);
 
+        return () => {
+            if (subscription) subscription.remove();
+        };
+    }, [route]);
 
 
     const routeCollection = useMemo(() => {
@@ -125,11 +176,31 @@ export function NavigationMap({route}: Readonly<NavigationMapProps>) {
         } as FeatureCollection;
     }, [route]);
 
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large"/>
+                <Text>Loading location…</Text>
+            </View>
+        );
+    }
+
+    if (errorMsg) {
+        return (
+            <View style={styles.errorContainer}>
+                <Text style={{color: 'red'}}>{errorMsg}</Text>
+            </View>
+        );
+    }
+
 
     return (
         <MapView
-            style={{flex: 1}}
+            ref={mapRef}
+            style={styles.map}
             mapStyle={styleURL}
+            logoEnabled={false}
+            compassEnabled={true}
         >
 
             <Camera
@@ -139,6 +210,33 @@ export function NavigationMap({route}: Readonly<NavigationMapProps>) {
                     zoomLevel: 16
                 }}
             />
+            {location &&
+                <MarkerView coordinate={[location.longitude, location.latitude]}>
+                    <View style={{alignItems: "center"}}>
+                        <Text style={{
+                            fontSize: 12,
+                            color: "black",
+                            backgroundColor: "white",
+                            paddingHorizontal: 4,
+                            borderRadius: 4,
+                            marginBottom: 2
+                        }}>
+                            You are here
+                        </Text>
+
+                        <View
+                            style={{
+                                width: 14,
+                                height: 14,
+                                backgroundColor: "red",
+                                borderRadius: 7,
+                                borderWidth: 2,
+                                borderColor: "#fff",
+                            }}
+                        />
+                    </View>
+                </MarkerView>
+            }
             {roomPolygons && (
                 <ShapeSource id="rooms" shape={roomPolygons}>
                     <FillLayer id="rooms-fill" style={ROOM_FILL_STYLE}/>
@@ -189,3 +287,9 @@ export function NavigationMap({route}: Readonly<NavigationMapProps>) {
         </MapView>
     );
 }
+
+const styles = StyleSheet.create({
+    map: {flex: 1},
+    loadingContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+    errorContainer: {padding: 20, justifyContent: 'center', alignItems: 'center'},
+});

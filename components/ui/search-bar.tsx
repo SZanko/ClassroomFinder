@@ -4,7 +4,8 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Keyboard
+  Keyboard,
+  TextInput
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SelectionModal } from '@/components/modals/selectionmodal';
@@ -20,6 +21,11 @@ const MANUAL: Record<string, string[]> = {
   'VII': ['1A', '2A', '2B'],
   'Library': ['Study Room 1', 'Main Floor', 'Quiet Zone'],
 };
+
+// Define the search criteria types
+export type SearchCriteria =
+  | { type: 'location', building: string | null, room: string | null }
+  | { type: 'name', query: string };
 
 function mergeData(a: Record<string,string[]>, b: Record<string,string[]>) {
   const out: Record<string,string[]> = { ...a };
@@ -38,7 +44,7 @@ const BUILDING_DATA: Record<string, string[]> = mergeData(
 
 
 interface SearchWidgetProps {
-  onSearch: (building: string | null, room: string | null) => void;
+  onSearch(criteria: SearchCriteria): void;
 }
 
 function normalizeBuildingName(name: string): string {
@@ -90,6 +96,11 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
 
+  // --- New State for Toggled Search ---
+  const [searchMode, setSearchMode] = useState<'Location' | 'Name'>('Location');
+  const [nameQuery, setNameQuery] = useState('');
+  const [lastSearchText, setLastSearchText] = useState('Find a classroom...');
+
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'BUILDING' | 'ROOM'>('BUILDING');
 
@@ -98,9 +109,8 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
 
   const openModal = (type: 'BUILDING' | 'ROOM') => {
     if (type === 'ROOM' && !selectedBuilding) {
-         // Optional: You could use Alert.alert here instead
-        console.warn("Select a building first"); 
-        return;
+      console.warn("Select a building first");
+      return;
     }
     setModalType(type);
     setModalVisible(true);
@@ -116,12 +126,30 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
     setModalVisible(false);
   };
 
+  // --- Updated Search Handler ---
   const handleSearchPress = () => {
-    onSearch(selectedBuilding, selectedRoom);
+    let searchText = '';
+
+    if (searchMode === 'Location') {
+      if (!selectedBuilding) return; // Or show alert
+      onSearch({ type: 'location', building: selectedBuilding, room: selectedRoom });
+      searchText = selectedRoom ? `${selectedBuilding} - ${selectedRoom}` : (selectedBuilding || '');
+      setNameQuery(''); // Clear other search type
+    } else {
+      if (nameQuery.trim() === '') return; // Or show alert
+      onSearch({ type: 'name', query: nameQuery });
+      searchText = nameQuery;
+      // Clear other search type
+      setSelectedBuilding(null);
+      setSelectedRoom(null);
+    }
+
+    setLastSearchText(searchText);
     setExpanded(false);
     Keyboard.dismiss();
   };
 
+  // --- Compact View ---
   if (!expanded) {
     return (
       <TouchableOpacity 
@@ -131,50 +159,85 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
       >
         <Ionicons name="search" size={20} color="#666" style={{ marginRight: 8 }} />
         <Text style={styles.placeholderText}>
-          {selectedRoom ? `${selectedBuilding} - ${selectedRoom}` : "Find a classroom..."}
+          {lastSearchText}
         </Text>
       </TouchableOpacity>
     );
   }
 
+  // --- Expanded View ---
   return (
     <View style={styles.expandedContainer}>
       <Text style={styles.headerText}>Find Classroom</Text>
 
-      <Text style={styles.label}>Building:</Text>
-      <TouchableOpacity style={styles.selector} onPress={() => openModal('BUILDING')}>
-        <Text style={selectedBuilding ? styles.selectorText : styles.placeholderText}>
-          {selectedBuilding || "Select Building"}
-        </Text>
-        <Ionicons name="chevron-down" size={20} color="#666" />
-      </TouchableOpacity>
+      {/* --- Segmented Control --- */}
+      <View style={styles.scopeContainer}>
+        <TouchableOpacity
+          style={[styles.scopeButton, searchMode === 'Location' && styles.activeScopeButton]}
+          onPress={() => setSearchMode('Location')}
+        >
+          <Text style={[styles.scopeText, searchMode === 'Location' && styles.activeScopeText]}>By Location</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.scopeButton, searchMode === 'Name' && styles.activeScopeButton]}
+          onPress={() => setSearchMode('Name')}
+        >
+          <Text style={[styles.scopeText, searchMode === 'Name' && styles.activeScopeText]}>By Name</Text>
+        </TouchableOpacity>
+      </View>
 
-      <Text style={styles.label}>Room:</Text>
-      <TouchableOpacity 
-        style={[styles.selector, !selectedBuilding && styles.disabledSelector]} 
-        onPress={() => openModal('ROOM')}
-        activeOpacity={selectedBuilding ? 0.2 : 1} // Disable tap effect if disabled
-      >
-        <Text style={selectedRoom ? styles.selectorText : styles.placeholderText}>
-          {selectedRoom || (selectedBuilding ? "Select Room" : "Select Building First")}
-        </Text>
-        <Ionicons name="chevron-down" size={20} color="#666" />
-      </TouchableOpacity>
+      {/* --- Conditional Inputs --- */}
+      {searchMode === 'Location' ? (
+        <>
+          <Text style={styles.label}>Building:</Text>
+          <TouchableOpacity style={styles.selector} onPress={() => openModal('BUILDING')}>
+            <Text style={selectedBuilding ? styles.selectorText : styles.placeholderText}>
+              {selectedBuilding || "Select Building"}
+            </Text>
+            <Ionicons name="chevron-down" size={20} color="#666" />
+          </TouchableOpacity>
 
+          <Text style={styles.label}>Room:</Text>
+          <TouchableOpacity
+            style={[styles.selector, !selectedBuilding && styles.disabledSelector]}
+            onPress={() => openModal('ROOM')}
+            activeOpacity={!selectedBuilding ? 1 : 0.2}
+          >
+            <Text style={selectedRoom ? styles.selectorText : styles.placeholderText}>
+              {selectedRoom || (selectedBuilding ? "Select Room" : "Select Building First")}
+            </Text>
+            <Ionicons name="chevron-down" size={20} color="#666" />
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <Text style={styles.label}>Classroom or Building Name:</Text>
+          <TextInput
+            style={styles.inputField}
+            value={nameQuery}
+            onChangeText={setNameQuery}
+            placeholder="e.g., Lab 120 or VII"
+            returnKeyType="search"
+            onSubmitEditing={handleSearchPress}
+          />
+        </>
+      )}
+
+      {/* --- Action Buttons --- */}
       <View style={styles.buttonRow}>
           <TouchableOpacity onPress={() => setExpanded(false)} style={styles.cancelButton}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             onPress={handleSearchPress} 
-            style={[styles.searchButton, (!selectedBuilding) && { opacity: 0.5 }]}
-            disabled={!selectedBuilding}
+            style={[styles.searchButton, (searchMode === 'Location' && !selectedBuilding) && { opacity: 0.5 }, (searchMode === 'Name' && nameQuery.trim() === '') && { opacity: 0.5 }]}
+            disabled={(searchMode === 'Location' && !selectedBuilding) || (searchMode === 'Name' && nameQuery.trim() === '')}
            >
               <Text style={styles.searchButtonText}>Search</Text>
           </TouchableOpacity>
       </View>
 
-      {/* REUSABLE MODAL COMPONENT */}
+      {/* --- Reusable Modal --- */}
       <SelectionModal
         visible={modalVisible}
         title={modalType === 'BUILDING' ? 'Select Building' : 'Select Room'}
@@ -187,6 +250,7 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
   );
 };
 
+// --- Styles ---
 const styles = StyleSheet.create({
   compactContainer: {
     flexDirection: 'row',
@@ -230,4 +294,45 @@ const styles = StyleSheet.create({
   cancelButtonText: { color: '#666', fontSize: 16 },
   searchButton: { backgroundColor: '#007AFF', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
   searchButtonText: { color: 'white', fontSize: 16, fontWeight: '600' },
+
+  // --- New Styles ---
+  scopeContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#eee',
+    borderRadius: 8,
+    padding: 2,
+    marginBottom: 10,
+  },
+  scopeButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 6,
+  },
+  activeScopeButton: {
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  scopeText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+  },
+  activeScopeText: {
+    color: '#000',
+    fontWeight: '600',
+  },
+  inputField: {
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#eee',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#000',
+  },
 });

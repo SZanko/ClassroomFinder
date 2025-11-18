@@ -5,7 +5,7 @@ create file .env
 with the MAPTILER_API_KEY=yourKey
 also use this expo build for your phone: 
 
-https://expo.dev/accounts/szanko_dev/projects/ipm-app/builds/cae6b6b6-7aaf-488b-88f9-39c9e68bc193
+https://expo.dev/accounts/szanko_dev/projects/ipm-app/builds/356943d1-aa48-41c8-a35f-764467a5c42b
 
 # New Rooms/Routes
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { ScheduleEntry, DAYS } from '@/assets/data/sample-schedule';
 
+// --- Constants ---
 const SUBJECTS = ['IPM', 'ML', 'SBD', 'MSP', 'IIO', 'ASPI'];
 const BUILDINGS = ['VII', 'II'];
 const ROOMS_BY_BUILDING: Record<string, string[]> = {
@@ -21,19 +22,22 @@ const ROOMS_BY_BUILDING: Record<string, string[]> = {
   'II': ['128', '127', 'Lab. 120'],
 };
 
-interface AddManualScheduleModalProps {
+interface EditScheduleModalProps {
   visible: boolean;
   onClose: () => void;
-  onAdd: (entry: ScheduleEntry) => void;
+  onSubmit: (entry: ScheduleEntry) => void;
   currentSchedule: ScheduleEntry[];
+  entryToEdit: ScheduleEntry; // Required prop for editing
 }
 
-export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
+export const EditScheduleModal: React.FC<EditScheduleModalProps> = ({
   visible,
   onClose,
-  onAdd,
+  onSubmit,
   currentSchedule,
+  entryToEdit,
 }) => {
+  // --- Form State ---
   const [subject, setSubject] = useState('');
   const [type, setType] = useState<'T' | 'P'>('T');
   const [building, setBuilding] = useState('');
@@ -42,51 +46,58 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   const [startHour, setStartHour] = useState(8);
   const [endHour, setEndHour] = useState(9);
 
+  // --- Dropdown Modal State ---
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'SUBJECT' | 'BUILDING' | 'ROOM'>('SUBJECT');
 
   const hours = useMemo(() => Array.from({ length: 16 }, (_, i) => i + 8), []);
   const availableRooms = useMemo(() => building ? ROOMS_BY_BUILDING[building] || [] : [], [building]);
 
-   const openModal = (type: 'SUBJECT' | 'BUILDING' | 'ROOM') => {
+  // --- Pre-fill Form on Edit ---
+  useEffect(() => {
+    // Only set state if the entryToEdit is available
+    if (entryToEdit && visible) {
+      setSubject(entryToEdit.subject);
+      setType(entryToEdit.type as 'T' | 'P');
+      setBuilding(entryToEdit.building);
+      setRoom(entryToEdit.room);
+      setDay(entryToEdit.day);
+      setStartHour(entryToEdit.hourIndex + 8);
+      setEndHour(entryToEdit.hourIndex + entryToEdit.duration + 8);
+    }
+  }, [visible, entryToEdit]); // Rerun when modal opens or the entry changes
+
+  // --- Dropdown Handlers ---
+  const openModal = (type: 'SUBJECT' | 'BUILDING' | 'ROOM') => {
      if (type === 'ROOM' && !building) {
-        Alert.alert("Select Building First", "Please select a building before choosing a room.");
-        return;
-      }
-      setModalType(type);
-      setModalVisible(true);
-   };
+       Alert.alert("Select Building First", "Please select a building before choosing a room.");
+       return;
+     }
+     setModalType(type);
+     setModalVisible(true);
+  };
 
-   const handleSelect = (item: string) => {
+  const handleSelect = (item: string) => {
+     switch (modalType) {
+       case 'SUBJECT': setSubject(item); break;
+       case 'BUILDING': setBuilding(item); setRoom(''); break;
+       case 'ROOM': setRoom(item); break;
+     }
+     setModalVisible(false);
+  };
+
+  const getModalData = () => {
       switch (modalType) {
-        case 'SUBJECT': setSubject(item); break;
-        case 'BUILDING': setBuilding(item); setRoom(''); break;
-        case 'ROOM': setRoom(item); break;
-      }
-      setModalVisible(false);
-    };
+       case 'SUBJECT': return SUBJECTS;
+       case 'BUILDING': return BUILDINGS;
+       case 'ROOM': return availableRooms;
+       default: return [];
+     }
+  };
 
-   const getModalData = () => {
-       switch (modalType) {
-        case 'SUBJECT': return SUBJECTS;
-        case 'BUILDING': return BUILDINGS;
-        case 'ROOM': return availableRooms;
-        default: return [];
-      }
-    };
-
-    const resetForm = () => {
-      setSubject('');
-      setBuilding('');
-      setRoom('');
-      setType('T');
-      setDay(DAYS[0]);
-      setStartHour(8);
-      setEndHour(9);
-    };
-
-
+  // --- Form Submission ---
   const handleSubmit = () => {
+    // Validation
     if (!subject || !building || !room) {
       Alert.alert("Missing Info", "Please fill in all fields.");
       return;
@@ -100,22 +111,24 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
     const newDuration = endHour - startHour;
     const newEnd = newStart + newDuration;
 
+    // Conflict Check (ignoring self)
     const hasConflict = currentSchedule.some((entry) => {
+      if (entry.id === entryToEdit.id) return false; // Don't check against self
       if (entry.day !== day) return false;
 
       const entryStart = entry.hourIndex;
       const entryEnd = entry.hourIndex + entry.duration;
-
       return newStart < entryEnd && entryStart < newEnd;
     });
 
     if (hasConflict) {
-      Alert.alert("Schedule Conflict", `You already have a class at this time on ${day}.`);
+      Alert.alert("Schedule Conflict", `This change conflicts with another class on ${day}.`);
       return;
     }
 
-    const newEntry: ScheduleEntry = {
-      id: Date.now().toString(),
+    // Create updated entry (keeping original ID)
+    const updatedEntry: ScheduleEntry = {
+      id: entryToEdit.id,
       subject,
       type,
       building,
@@ -125,24 +138,23 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
       duration: newDuration,
     };
 
-    onAdd(newEntry);
-    resetForm();
+    onSubmit(updatedEntry);
     onClose();
   };
 
   return (
-      <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
-         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.header}>
-            <Text style={styles.title}>Add Class Manually</Text>
+            <Text style={styles.title}>Edit Class</Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>
-            
+            {/* Subject & Type Row */}
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 2, marginRight: 10 }]}>
                 <Text style={styles.label}>Subject</Text>
@@ -169,6 +181,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
               </View>
             </View>
 
+            {/* Location Row */}
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                 <Text style={styles.label}>Building</Text>
@@ -189,6 +202,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
               </View>
             </View>
 
+            {/* Day Selector */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Day</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalSelect}>
@@ -200,6 +214,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
               </ScrollView>
             </View>
 
+            {/* Time Row */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Start Hour</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalSelect}>
@@ -224,11 +239,12 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
           </ScrollView>
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Add to Schedule</Text>
+            <Text style={styles.submitButtonText}>Save Changes</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
 
+      {/* --- Reusable Selection Modal --- */}
       <Modal visible={modalVisible} transparent={true} animationType="fade" onRequestClose={() => setModalVisible(false)}>
         <TouchableOpacity style={styles.selectionModalOverlay} activeOpacity={1} onPress={() => setModalVisible(false)}>
           <View style={styles.selectionModalContent}>
@@ -254,6 +270,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   );
 };
 
+// --- Helper Component ---
 const DropdownField = ({ placeholder, value, onPress, disabled = false }: { placeholder: string, value: string, onPress: () => void, disabled?: boolean }) => (
   <TouchableOpacity 
     style={[styles.dropdownField, disabled && styles.disabledDropdown]} 
@@ -267,6 +284,7 @@ const DropdownField = ({ placeholder, value, onPress, disabled = false }: { plac
   </TouchableOpacity>
 );
 
+// --- Styles ---
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -348,7 +366,6 @@ const styles = StyleSheet.create({
   activeTypeText: {
     color: 'white',
   },
-  // Scroll Selectors
   horizontalSelect: {
     flexDirection: 'row',
   },

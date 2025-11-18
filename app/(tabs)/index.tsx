@@ -10,19 +10,27 @@ import {FontAwesome} from "@expo/vector-icons";
 import {toggleButtonStyle} from '@/components/ui/toggle-tab-button';
 import {NavigationMap} from '@/components/ui/map';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {SearchWidget} from '@/components/ui/search-bar';
+import {SearchWidget, SearchCriteria} from '@/components/ui/search-bar';
 import {coordinator, graph} from "@/services/routing";
 import {
     Camera,
     CameraRef
 } from "@maplibre/maplibre-react-native";
-import { GeoPoint } from '@/hooks/use-current-location';
+import {GeoPoint} from '@/hooks/use-current-location';
 import {AnySegment, LngLat} from "@/services/routing/types";
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 
-const startRoom='127'
-const startRoomCoordinates:LngLat = [-9.205344, 38.662565]
-const endRoom='116'
+const startRoom = '127'
+const startRoomCoordinates: LngLat = [-9.205344, 38.662565]
+const endRoom = '116'
+
+const floatingButtonStyle = {
+    position: 'absolute' as const,
+    bottom: 20,
+    right: 20,
+    zIndex: 20,
+};
 
 export default function MapScreen() {
     const [route, setRoute] = useState<AnySegment[] | null>(null);
@@ -33,28 +41,36 @@ export default function MapScreen() {
         latitude: 38.661847,
     };
 
-  const handleCompoundSearch = async (building: string | null, room: string | null) => {
-      console.log("Starting navigation to:", building, room);
+    const handleCompoundSearch = async (criteria: SearchCriteria) => {
+        if (criteria.type === 'location') {
+            console.log("Searching by LOCATION:", criteria.building, criteria.room);
+        } else {
+            console.log("Searching by NAME:", criteria.query);
+        }
 
-      if(!building || !room) return;
 
-      try {
-          // This part depends on how your RouterCoordinator is defined.
-          // Typical pattern: coordinator.route(from, to) => AnySegment[]
-          // Assume LngLat is [number, number]:
-          const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
+        try {
+            // This part depends on how your RouterCoordinator is defined.
+            // Typical pattern: coordinator.route(from, to) => AnySegment[]
+            // Assume LngLat is [number, number]:
+            const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
 
-          // However you encode your indoor target (this is just an example)
-          const toId = `${building}-${room}`;
+            // However you encode your indoor target (this is just an example)
+            let toId;
+            if(criteria.type === 'location') {
+                toId = `${criteria.building}-${criteria.room}`;
+            }
+            else {
+                toId = criteria.query;
+            }
 
-          const segments: AnySegment[] = await coordinator.routeGpsToRoom(from, toId);
-          setRoute(segments);
-      } catch (e) {
-          console.warn('Failed to compute route', e);
-          setRoute(null);
-      }
-
-  };
+            const segments: AnySegment[] = await coordinator.routeGpsToRoom(from, toId);
+            setRoute(segments);
+        } catch (e) {
+            console.warn('Failed to compute route', e);
+            setRoute(null);
+        }
+    };
 
 
     //useEffect(() => {
@@ -83,30 +99,30 @@ export default function MapScreen() {
         };
     }, [startRoomCoordinates, endRoom]);
 
-    return (
-        <View style={styles.container}>
-
-          <NavigationMap route={route}/>
-          <View style={styles.searchContainer}>
-            <SearchWidget onSearch={handleCompoundSearch} />
-          </View>
-
-
-            <TouchableOpacity
-                style={toggleButtonStyle.toggleButton}
-                onPress={() => router.push('/schedule')}
-                accessibilityLabel="Go to schedule"
-            >
-                <FontAwesome name="calendar" size={22} color="#fff"/>
-            </TouchableOpacity>
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <NavigationMap route={route} />
+        <View style={styles.searchContainer}>
+          {/* This component call remains the same */}
+          <SearchWidget onSearch={handleCompoundSearch} />
         </View>
-    );
+
+        <TouchableOpacity
+          style={[toggleButtonStyle.toggleButton, floatingButtonStyle]}
+          onPress={() => router.push('/schedule')}
+          accessibilityLabel="Go to schedule"
+        >
+          <FontAwesome name="calendar" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
     container: {flex: 1},
     map: {flex: 1},
-    // … weitere Styles …
     searchContainer: {
         position: 'absolute',
         top: Platform.OS === 'ios' ? 60 : 40,
