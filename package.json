@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "build:rooms": "node scripts/build-rooms.mjs",
-    "build:routing": "node ./scripts/build-indoor-graph.mjs",
+    "build:routing": "node ./scripts/build-indoor-graph-new.mjs",
     "test": "jest --watchAll"
   },
   "dependencies": {

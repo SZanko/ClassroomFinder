@@ -72,3 +72,8 @@ export function getBuildingCenter(
 
     return b ? b.center : null;
 }
+
+export function isRomanNumeral(value: string): boolean {
+    // Simple Roman numeral check: only I, V, X, L, C, D, M
+    return /^[IVXLCDM]+$/i.test(value.trim());
+}

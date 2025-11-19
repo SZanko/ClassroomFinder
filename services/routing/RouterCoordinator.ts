@@ -9,6 +9,7 @@ import type {
     OutdoorSegment,
     Room, AnySegment
 } from './types';
+import {isRomanNumeral} from "@/services/routing/utils";
 
 // Strongly type the imported JSON (requires resolveJsonModule in tsconfig)
 //const indoorGraph: IndoorGraph = rawGraph as unknown as IndoorGraph;
@@ -19,7 +20,8 @@ export class RouterCoordinator {
     private readonly indoor: IndoorRouter;
     public readonly outdoor: OutdoorRouter;
 
-    // 👇 allow tests to inject a graph and/or outdoor service
+    private readonly roomsByBuildingAndRef: Record<string, Record<string, string>> = {};
+
     constructor(
         graph: IndoorGraph,
         outdoor: OutdoorRouter = new OutdoorRouter()
@@ -27,6 +29,32 @@ export class RouterCoordinator {
         this.graph = graph;
         this.indoor = new IndoorRouter(graph);
         this.outdoor = outdoor;
+
+        console.log(JSON.stringify(graph.rooms))
+
+        for (const [roomKey, room] of Object.entries(graph.rooms)) {
+            if (!room.building || !room.ref) continue;
+            if (!this.roomsByBuildingAndRef[room.building]) {
+                this.roomsByBuildingAndRef[room.building] = {};
+            }
+            this.roomsByBuildingAndRef[room.building][room.ref] = roomKey;
+        }
+
+        console.info("All rooms in index:" + JSON.stringify(this.roomsByBuildingAndRef))
+    }
+
+    private roomKeyFor(building: string, ref: string): string {
+        const byBuilding = this.roomsByBuildingAndRef[building];
+
+
+        if (!byBuilding) {
+            throw new Error(`Unknown building in indoor graph: ${building}`);
+        }
+        const key = byBuilding[ref];
+        if (!key) {
+            throw new Error(`Room ${ref} not found in building ${building}`);
+        }
+        return key;
     }
 
 
@@ -71,6 +99,69 @@ export class RouterCoordinator {
 
         return [outdoorSeg, ...indoorSegs];
     }
+
+
+    /**
+     * Route from an outdoor building (e.g. "Building VIII")
+     * to a specific room in another building (e.g. "Building II", "128").
+     */
+    async routeBuildingToRoom(
+        fromBuilding: string,
+        toBuilding: string,
+        roomNumber: string
+    ): Promise<AnySegment[]> {
+
+
+        const fromLabel = isRomanNumeral(fromBuilding)
+            ? `Building ${fromBuilding}`
+            : fromBuilding;
+
+        const toLabel = isRomanNumeral(toBuilding)
+            ? `Building ${toBuilding}`
+            : toBuilding;
+
+
+
+        console.log("Building to room: " + fromLabel + " to " + toLabel + " room " + roomNumber)
+
+        // 1. Outdoor route: fromBuilding -> toBuilding
+        const outdoorSegments = await this.outdoor.routeOutdoorToOutdoor(
+            fromLabel,
+           toLabel
+        );
+
+        if (!outdoorSegments || outdoorSegments.length === 0) {
+            throw new Error(`No outdoor route found from ${fromLabel} to ${toLabel}`);
+        }
+
+        // 2. Get last coordinate of the outdoor path
+        const lastOutdoorSeg = outdoorSegments[outdoorSegments.length - 1];
+        const lastOutdoorPoint =
+            lastOutdoorSeg.line[lastOutdoorSeg.line.length - 1] as LngLat | undefined;
+
+        if (!lastOutdoorPoint) {
+            throw new Error("Outdoor route has no coordinates");
+        }
+
+        // 3. Build a room id / key consistent with the rest of your app
+        // If your rooms are stored as just "128", keep roomId = roomNumber.
+        // If you prefix them with building (like "II-128"), use that instead.
+        //const roomId = roomNumber //`${toBuilding}-${roomNumber}`; // or just roomNumber if that's how your graph is set up
+
+        const entranceId = this.nearestEntrance(lastOutdoorPoint);
+
+        const roomKey = this.roomKeyFor(toLabel, roomNumber);
+
+
+        // 4. Indoor route: from last outdoor point -> room
+        //const indoorSegments = await this.routeGpsToRoom(lastOutdoorPoint, roomKey);
+        const indoorSegments = this.indoor.routeEntranceToRoom(entranceId, roomKey);
+
+        console.log("Found route")
+        // 5. Combine segments: outdoor first, then indoor
+        return [...outdoorSegments, ...indoorSegments];
+    }
+
 
     /** Room → Room (pure indoor) */
     routeRoomToRoom(fromRoomKey: string, toRoomKey: string): AnySegment[] {

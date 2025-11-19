@@ -45,12 +45,12 @@ class MinPQ<T extends [number, string]> {
 }
 
 export class IndoorRouter {
-    private readonly g: IndoorGraph;
+    private readonly indoorGraph: IndoorGraph;
     private readonly adj: Record<NodeId, { to: NodeId; w: number }[]>;
 
-    constructor(g: IndoorGraph) {
-        this.g = g;
-        this.adj = this.buildAdj(g.edges);
+    constructor(indoorGraph: IndoorGraph) {
+        this.indoorGraph = indoorGraph;
+        this.adj = this.buildAdj(indoorGraph.edges);
     }
 
     private buildAdj(edges: IndoorEdge[]) {
@@ -63,14 +63,14 @@ export class IndoorRouter {
 
     /** Core: Dijkstra shortest path between two nodeIds. Returns nodeId[] path. */
     private shortestPath(from: NodeId, to: NodeId): NodeId[] {
-        if (!this.g.nodes[from] || !this.g.nodes[to]) return [];
+        if (!this.indoorGraph.nodes[from] || !this.indoorGraph.nodes[to]) return [];
 
         const dist = new Map<NodeId, number>();
         const prev = new Map<NodeId, NodeId | null>();
         const pq = new MinPQ<[number, NodeId]>();
         const visited = new Set<NodeId>();
 
-        for (const id of Object.keys(this.g.nodes)) dist.set(id, Infinity);
+        for (const id of Object.keys(this.indoorGraph.nodes)) dist.set(id, Infinity);
         dist.set(from, 0);
         prev.set(from, null);
         pq.push([0, from]);
@@ -114,16 +114,16 @@ export class IndoorRouter {
         const segs: RouteSegment[] = [];
 
         const coord = (id: NodeId): LngLat => {
-            const n = this.g.nodes[id];
+            const n = this.indoorGraph.nodes[id];
             return [n.lng, n.lat];
         };
 
-        let runLevel = this.g.nodes[path[0]].level;
+        let runLevel = this.indoorGraph.nodes[path[0]].level;
         let runCoords: LngLat[] = [coord(path[0])];
 
         for (let i = 1; i < path.length; i++) {
             const id = path[i];
-            const lvl = this.g.nodes[id].level;
+            const lvl = this.indoorGraph.nodes[id].level;
             const c = coord(id);
 
             if (lvl === runLevel) {
@@ -153,15 +153,16 @@ export class IndoorRouter {
 
     /** Route room → room */
     routeRoomToRoom(fromRoomKey: string, toRoomKey: string): RouteSegment[] {
-        const from = this.g.rooms[fromRoomKey]?.node;
-        const to = this.g.rooms[toRoomKey]?.node;
+        const from = this.indoorGraph.rooms[fromRoomKey]?.node;
+        const to = this.indoorGraph.rooms[toRoomKey]?.node;
         if (!from || !to) throw new Error('room not found in graph');
         return this.routeBetweenNodes(from, to);
     }
 
     /** Route entrance node → room */
     routeEntranceToRoom(entranceNodeId: string, roomKey: string): RouteSegment[] {
-        const to = this.g.rooms[roomKey]?.node;
+        const to = this.indoorGraph.rooms[roomKey]?.node;
+        console.info("Room Key" + roomKey + " is " + JSON.stringify(this.indoorGraph.rooms[roomKey]))
         if (!to) throw new Error('room not found');
         return this.routeBetweenNodes(entranceNodeId, to);
     }

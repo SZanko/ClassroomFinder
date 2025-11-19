@@ -54,14 +54,14 @@ export class OutdoorRouter {
         const fromCoord: LngLat =
             typeof from === 'string'
                 ? getBuildingCenter(from) ?? (() => {
-                throw new Error(`Unknown building "${from}"`);
+                throw new Error(`Unknown building "${from}" for starting point`);
             })()
                 : from;
 
         const toCoord: LngLat =
             typeof to === 'string'
                 ? getBuildingCenter(to) ?? (() => {
-                throw new Error(`Unknown building "${to}"`);
+                throw new Error(`Unknown building "${to}" for finish`);
             })()
                 : to;
         return [await this.walkingRoute(fromCoord, toCoord)];

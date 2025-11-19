@@ -10,14 +10,15 @@
  * Optional inputs (prebuilt by your other script):
  *   assets/data/rooms_polygons.json
  *   assets/data/rooms_centers.json
+ *   assets/data/rooms_index.json
  */
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import pointOnFeature from '@turf/point-on-feature';
 
+// osmtogeojson interop (CJS/ESM safe)
 import osmPkg from 'osmtogeojson';
-
 const osmtogeojson = (osmPkg?.default ?? osmPkg);
 
 /* ----------------------------- CONFIG ----------------------------- */
@@ -57,9 +58,9 @@ const PORTALS_STAIRS_QUERY = `[out:json][timeout:60];
 out geom tags;`;
 
 // Input room files (from your build-rooms script)
-const ROOMS_POLYS_FILE = path.resolve('assets/data/rooms_polygons.json');
+const ROOMS_POLYS_FILE   = path.resolve('assets/data/rooms_polygons.json');
 const ROOMS_CENTERS_FILE = path.resolve('assets/data/rooms_centers.json');
-const ROOMS_INDEX_FILE = path.resolve('assets/data/rooms_index.json');
+const ROOMS_INDEX_FILE   = path.resolve('assets/data/rooms_index.json');
 
 // Output
 const OUT_FILE = path.resolve('assets/data/indoor-graph.json');
@@ -76,7 +77,8 @@ function haversine(a, b) {
     const lat2 = toRad(b[1]);
     const s =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        Math.cos(lat1) * Math.cos(lat2) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
     return 2 * R * Math.asin(Math.sqrt(s));
 }
 
@@ -132,7 +134,7 @@ function isPolygonal(g) {
 /* ------------------------- MAIN PIPELINE -------------------------- */
 
 (async () => {
-    await fs.mkdir(path.dirname(OUT_FILE), {recursive: true});
+    await fs.mkdir(path.dirname(OUT_FILE), { recursive: true });
 
     // 1) fetch corridors
     const corridorsJson = await overpass(CORRIDORS_QUERY);
@@ -142,10 +144,10 @@ function isPolygonal(g) {
     const portalJson = await overpass(PORTALS_STAIRS_QUERY);
     const portalFC = osmtogeojson(portalJson);
 
-    // 3) load prebuilt rooms (polygons + centers)
-    const roomsPolys = JSON.parse(await fs.readFile(ROOMS_POLYS_FILE, 'utf8'));
+    // 3) load prebuilt rooms (polygons + centers + building index)
+    const roomsPolys   = JSON.parse(await fs.readFile(ROOMS_POLYS_FILE, 'utf8'));
     const roomsCenters = JSON.parse(await fs.readFile(ROOMS_CENTERS_FILE, 'utf8'));
-    const roomsIndex = JSON.parse(await fs.readFile(ROOMS_INDEX_FILE, 'utf8'));
+    const roomsIndex   = JSON.parse(await fs.readFile(ROOMS_INDEX_FILE, 'utf8'));
 
     /* ---------- build nodes & edges from corridors per level --------- */
 
@@ -165,7 +167,7 @@ function isPolygonal(g) {
         const existing = nodeIndex.get(key);
         if (existing) return existing;
         const id = makeNodeId(level, ++nodeSeq);
-        nodes[id] = {lng: lon, lat: lat, level, tags};
+        nodes[id] = { lng: lon, lat: lat, level, tags };
         nodeIndex.set(key, id);
         return id;
     }
@@ -184,8 +186,8 @@ function isPolygonal(g) {
                     const a = ensureNode(lvl, lonA, latA);
                     const b = ensureNode(lvl, lonB, latB);
                     const w = haversine([lonA, latA], [lonB, latB]);
-                    edges.push({from: a, to: b, w, type: 'corridor'});
-                    edges.push({from: b, to: a, w, type: 'corridor'});
+                    edges.push({ from: a, to: b, w, type: 'corridor' });
+                    edges.push({ from: b, to: a, w, type: 'corridor' });
                 }
             });
         });
@@ -207,7 +209,7 @@ function isPolygonal(g) {
 
             // If it's a real "entrance" (exterior door), remember it for outdoor hand-off
             if (tags.entrance || tags.door === 'yes') {
-                entrances.push({node: id, level: lvl});
+                entrances.push({ node: id, level: lvl });
             }
         });
 
@@ -223,7 +225,7 @@ function isPolygonal(g) {
             if (!tags[tagKey]) continue;
             const key = coordKey(n.lng, n.lat);
             if (!buckets.has(key)) buckets.set(key, []);
-            buckets.get(key).push({id, level: n.level});
+            buckets.get(key).push({ id, level: n.level });
         }
         for (const list of buckets.values()) {
             // sort by numeric level if possible
@@ -232,8 +234,8 @@ function isPolygonal(g) {
                 const a = list[i], b = list[i + 1];
                 const na = nodes[a.id], nb = nodes[b.id];
                 const w = Math.max(4, Math.abs(Number(a.level) - Number(b.level)) * 6); // simple penalty
-                edges.push({from: a.id, to: b.id, w, type: tagKey});
-                edges.push({from: b.id, to: a.id, w, type: tagKey});
+                edges.push({ from: a.id, to: b.id, w, type: tagKey });
+                edges.push({ from: b.id, to: a.id, w, type: tagKey });
             }
         }
     }
@@ -242,42 +244,29 @@ function isPolygonal(g) {
     connectVertical('amenity'); // "amenity=elevator" → we set edges only if tag present on node
     connectVertical('highway'); // "highway=steps" nodes get linked (crude but works if levels are present)
 
-    /* -------------------- snap rooms to graph -------------------- */
-    const roomBuildingMap = new Map();
-    for (const [buildingName, roomEntries] of Object.entries(roomsIndex)) {
-        for (const entry of roomEntries) {
-            const [lon, lat] = entry.center;
-            const key = `${entry.ref}@@${lon.toFixed(7)},${lat.toFixed(7)}`;
-            roomBuildingMap.set(key, {
-                building: buildingName,
-                ref: entry.ref
-            });
-        }
-    }
 
-    // Build a quick array of corridor candidates per level for snapping
+    /* -------------------- snap rooms to graph -------------------- */
+
+// Build a quick array of corridor candidates per level for snapping
     const nodesByLevel = {};
     for (const [id, n] of Object.entries(nodes)) {
-        (nodesByLevel[n.level] ||= []).push({id, n});
+        (nodesByLevel[n.level] ||= []).push({ id, n });
     }
 
     function nearestNodeId(level, lon, lat) {
         const list = nodesByLevel[level] || [];
         let best = null;
         let bestD = Infinity;
-        for (const {id, n} of list) {
+        for (const { id, n } of list) {
             const d = haversine([lon, lat], [n.lng, n.lat]);
-            if (d < bestD) {
-                bestD = d;
-                best = id;
-            }
+            if (d < bestD) { bestD = d; best = id; }
         }
         return best;
     }
 
-    const rooms = {}; // key -> {node, level, center:[lon,lat]}
+    const rooms = {}; // key -> {node, level, center, building, ref}
 
-    // pick a stable room key (prefer "ref", else "name")
+// index polygons by ref/name so we can get geometry + level
     const roomPolysByKey = new Map();
     for (const f of roomsPolys.features || []) {
         if (!isPolygonal(f.geometry)) continue;
@@ -287,44 +276,49 @@ function isPolygonal(g) {
         roomPolysByKey.set(key, f);
     }
 
-    for (const f of roomsCenters.features || []) {
-        if (f.geometry?.type !== 'Point') continue;
-        const props = f.properties || {};
-        const key = (props.ref || props.name || '').trim();
-        if (!key) continue;
+    /**
+     * Now: drive room creation from rooms_index.json, because that
+     * already has "building" and "ref" grouped together.
+     */
+    for (const [buildingName, roomEntries] of Object.entries(roomsIndex)) {
+        for (const entry of roomEntries) {
+            const ref = (entry.ref || '').trim();
+            if (!ref) continue;
 
-        // use guaranteed-inside point if possible (fallback to provided center)
-        let center = f.geometry.coordinates;
-        const poly = roomPolysByKey.get(key);
-        if (poly) {
-            try {
-                center = pointOnFeature(poly).geometry.coordinates;
-            } catch {
+            // Start from center in rooms_index
+            let center = entry.center; // [lng, lat]
+
+            // If we have a polygon for this ref, compute an inside point
+            const poly = roomPolysByKey.get(ref);
+            if (poly) {
+                try {
+                    center = pointOnFeature(poly).geometry.coordinates;
+                } catch {
+                    // fall back to entry.center if anything goes wrong
+                }
             }
+
+            // Determine level from polygon tags if present, else '0'
+            const level = getLevel(poly?.properties, '0');
+            levels.add(level);
+
+            // find nearest corridor node on same level
+            const snappedNode = nearestNodeId(level, center[0], center[1]);
+            if (!snappedNode) continue;
+
+            // You’re using ref itself as the key in graph.rooms
+            const roomKey = ref;
+
+            rooms[roomKey] = {
+                node: snappedNode,
+                level,
+                center,
+                building: buildingName, // <- this is what you wanted
+                ref
+            };
         }
-
-        // determine level: from room polygon tags if present, else '0'
-        const level = getLevel(poly?.properties, '0');
-        levels.add(level);
-
-        // find nearest corridor node on same level
-        const snappedNode = nearestNodeId(level, center[0], center[1]);
-        if (!snappedNode) continue;
-
-        // create a tiny "snap" edge (room <-> corridor)
-        const n = nodes[snappedNode];
-        const w = Math.max(0.5, haversine(center, [n.lng, n.lat]));
-        // represent room node as synthetic node (optional) or just map to corridor node
-        // Simpler: map directly to corridor node
-        rooms[key] = {node: snappedNode, level, center};
-
-        // If you want a dedicated room node, uncomment:
-        // const roomNodeId = `${level}:room:${key}`;
-        // nodes[roomNodeId] = { lng: center[0], lat: center[1], level, tags: { room_node: 'yes', key } };
-        // edges.push({ from: roomNodeId, to: snappedNode, w, type:'snap' });
-        // edges.push({ from: snappedNode, to: roomNodeId, w, type:'snap' });
-        // rooms[key] = { node: roomNodeId, level, center };
     }
+
 
     /* --------------------------- OUTPUT --------------------------- */
 

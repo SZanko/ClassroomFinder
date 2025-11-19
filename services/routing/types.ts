@@ -40,6 +40,8 @@ export interface IndoorRoomEntry {
     node: NodeId;
     level: string;
     center: LngLat;
+    building: string;
+    ref: string;
 }
 
 export interface IndoorGraph {
