@@ -43,7 +43,7 @@ export default function ScheduleScreen() {
   const [clickedExistingBlock, setClickedExistingBlock] = useState(false);
 
   const STORAGE_KEY = "@schedule_blocks";
-  const loadBlocks = async () => {
+  const loadSchedule = async () => {
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -54,7 +54,7 @@ export default function ScheduleScreen() {
       console.warn("Failed to load schedule", e);
     }
   };
-  const saveBlocks = async (next: GridBlock[]) => {
+  const saveSchedule = async (next: GridBlock[]) => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch (e) {
@@ -63,12 +63,11 @@ export default function ScheduleScreen() {
   };
 
   useEffect(() => {
-    loadBlocks();
+    loadSchedule();
   }, []);
 
-  // After any change to blocks persist them
   useEffect(() => {
-    if (blocks.length >= 0) saveBlocks(blocks);
+    if (blocks.length >= 0) saveSchedule(blocks);
   }, [blocks]);
 
   const clearSelection = () => setSelectedCells(new Set());
@@ -77,7 +76,6 @@ export default function ScheduleScreen() {
   const isCellSelected = (r: number, c: number) =>
     selectedCells.has(getKey(r, c));
 
-  // Find grid block covering a given non-header cell
   const getBlockAt = (rowIndex: number, colIndex: number): GridBlock | null => {
     if (rowIndex === 0 || colIndex === 0) return null;
     const hour = rowIndex - 1;
@@ -99,7 +97,7 @@ export default function ScheduleScreen() {
     if (!width || !height) return null;
     const col = Math.floor((x / width) * TOTAL_COLS);
     const row = Math.floor((y / height) * TOTAL_ROWS);
-    if (row <= 0 || col <= 0) return null; // ignore headers
+    if (row <= 0 || col <= 0) return null;
     return { row, col } as const;
   };
 
@@ -137,7 +135,6 @@ export default function ScheduleScreen() {
   const handleGridRelease = () => {
     setIsSelecting(false);
     if (clickedExistingBlock) {
-      // Reset flag; no modal
       setClickedExistingBlock(false);
       return;
     }
@@ -148,12 +145,11 @@ export default function ScheduleScreen() {
     if (width && height) setGridSize({ width, height });
   };
 
-  // Convert current selection into vertical blocks per day
   const selectionToBlocks = (entry: ScheduleEntry): GridBlock[] => {
     const perCol = new Map<number, number[]>();
     selectedCells.forEach((key) => {
       const [r, c] = key.split("-").map((n) => parseInt(n, 10));
-      if (r === 0 || c === 0) return; // skip headers
+      if (r === 0 || c === 0) return;
       const arr = perCol.get(c) ?? [];
       arr.push(r);
       perCol.set(c, arr);
@@ -166,7 +162,6 @@ export default function ScheduleScreen() {
       for (let i = 1; i <= rows.length; i++) {
         const cur = rows[i];
         if (cur !== prev + 1) {
-          // finalize segment [start..prev]
           const startHour = start - 1;
           const duration = prev - start + 1;
           newBlocks.push({
@@ -227,8 +222,7 @@ export default function ScheduleScreen() {
             borderColor: "#000",
             borderRadius: 12,
             overflow: "hidden",
-            position: "relative", // allow overlay blocks
-            // @ts-ignore RN Web: avoid text selection while dragging
+            position: "relative",
             userSelect: "none",
           }}
         >
@@ -267,7 +261,6 @@ export default function ScheduleScreen() {
                   );
                 }
 
-                // Base grid cell (no merging manipulation)
                 return (
                   <View
                     key={`cell-${rowIndex}-${colIndex}`}
@@ -280,7 +273,7 @@ export default function ScheduleScreen() {
                       backgroundColor: isCellSelected(rowIndex, colIndex)
                         ? "#cce5ff"
                         : "#fff",
-                      // @ts-ignore
+
                       cursor: "pointer",
                     }}
                   />
@@ -377,18 +370,16 @@ export default function ScheduleScreen() {
                 backgroundColor: "#007AFF",
                 height: 60,
                 width: 180,
-
-                // borderRadius: 12,
               }}
               onPress={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {/* <Ionicons
+              <Ionicons
                 name={
                   isMenuOpen ? "remove-circle-outline" : "add-circle-outline"
                 }
-                size={24}
+                size={16}
                 color="#fff"
-              /> */}
+              />
               <Text
                 style={{
                   color: "#fff",
