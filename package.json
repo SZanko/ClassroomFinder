@@ -34,6 +34,7 @@
     "expo-task-manager": "^14.0.8",
     "expo-web-browser": "~15.0.9",
     "geojson": "^0.5.0",
+    "graphhopper": "^2025.7.1-0.1",
     "hooks": "^0.3.2",
     "maplibre": "^0.0.1-security",
     "osmtogeojson": "^3.0.0-beta.5",
