@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
 import { View, Text, TouchableOpacity, Pressable } from "react-native";
@@ -23,10 +24,12 @@ const HOURS: string[] = (() => {
 
 // Local shape for painted blocks on the grid
 type GridBlock = {
-  dayIndex: number; // 0..4 for MON..FRI
-  start: number; // hour index 0..15
-  duration: number; // number of slots
+  dayIndex: number;
+  start: number;
+  duration: number;
   subject: string;
+  building: string;
+  room: string;
 };
 
 export default function ScheduleScreen() {
@@ -37,6 +40,36 @@ export default function ScheduleScreen() {
   const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
   const [manualVisible, setManualVisible] = useState(false);
   const [blocks, setBlocks] = useState<GridBlock[]>([]);
+  const [clickedExistingBlock, setClickedExistingBlock] = useState(false);
+
+  const STORAGE_KEY = "@schedule_blocks";
+  const loadBlocks = async () => {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed: GridBlock[] = JSON.parse(raw);
+        setBlocks(parsed);
+      }
+    } catch (e) {
+      console.warn("Failed to load schedule", e);
+    }
+  };
+  const saveBlocks = async (next: GridBlock[]) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.warn("Failed to save schedule", e);
+    }
+  };
+
+  useEffect(() => {
+    loadBlocks();
+  }, []);
+
+  // After any change to blocks persist them
+  useEffect(() => {
+    if (blocks.length >= 0) saveBlocks(blocks);
+  }, [blocks]);
 
   const clearSelection = () => setSelectedCells(new Set());
 
@@ -81,10 +114,19 @@ export default function ScheduleScreen() {
   };
 
   const handleGridGrant = (e: any) => {
-    setIsSelecting(true);
     const { locationX, locationY } = e.nativeEvent;
     const cell = pointToCell(locationX, locationY);
-    if (cell) addCell(cell.row, cell.col);
+    if (!cell) return;
+    const block = getBlockAt(cell.row, cell.col);
+    if (block) {
+      console.log(`${block.subject} ${block.building} ${block.room}`);
+      setClickedExistingBlock(true);
+      clearSelection();
+      setIsSelecting(false);
+      return;
+    }
+    setIsSelecting(true);
+    addCell(cell.row, cell.col);
   };
   const handleGridMove = (e: any) => {
     if (!isSelecting) return;
@@ -94,6 +136,11 @@ export default function ScheduleScreen() {
   };
   const handleGridRelease = () => {
     setIsSelecting(false);
+    if (clickedExistingBlock) {
+      // Reset flag; no modal
+      setClickedExistingBlock(false);
+      return;
+    }
     if (selectedCells.size > 0) setManualVisible(true);
   };
   const onGridLayout = (e: any) => {
@@ -102,7 +149,7 @@ export default function ScheduleScreen() {
   };
 
   // Convert current selection into vertical blocks per day
-  const selectionToBlocks = (subject: string): GridBlock[] => {
+  const selectionToBlocks = (entry: ScheduleEntry): GridBlock[] => {
     const perCol = new Map<number, number[]>();
     selectedCells.forEach((key) => {
       const [r, c] = key.split("-").map((n) => parseInt(n, 10));
@@ -126,7 +173,9 @@ export default function ScheduleScreen() {
             dayIndex: c - 1,
             start: startHour,
             duration,
-            subject,
+            subject: entry.subject,
+            building: entry.building,
+            room: entry.room,
           });
           start = cur;
         }
@@ -178,6 +227,7 @@ export default function ScheduleScreen() {
             borderColor: "#000",
             borderRadius: 12,
             overflow: "hidden",
+            position: "relative", // allow overlay blocks
             // @ts-ignore RN Web: avoid text selection while dragging
             userSelect: "none",
           }}
@@ -203,13 +253,11 @@ export default function ScheduleScreen() {
                         backgroundColor: "#f7f7f7",
                       }}
                     >
-                      {/* Days */}
                       {rowIndex === 0 && colIndex > 0 ? (
                         <Text style={{ fontWeight: "600", color: "#333" }}>
                           {DAYS[colIndex - 1] ?? ""}
                         </Text>
                       ) : null}
-                      {/* Hours */}
                       {rowIndex > 0 && colIndex === 0 ? (
                         <Text style={{ fontWeight: "600", color: "#333" }}>
                           {HOURS[rowIndex - 1] ?? ""}
@@ -219,48 +267,72 @@ export default function ScheduleScreen() {
                   );
                 }
 
-                const covering = getBlockAt(rowIndex, colIndex);
-                const hour = rowIndex - 1;
-                const isTopOfBlock = covering ? hour === covering.start : false;
-                const inBlock = !!covering;
-
-                const bgColor = inBlock
-                  ? "#DDEBFF"
-                  : isCellSelected(rowIndex, colIndex)
-                  ? "#cce5ff"
-                  : "#fff";
-
-                const borderTopWidth = inBlock && !isTopOfBlock ? 0 : 0.5;
-
+                // Base grid cell (no merging manipulation)
                 return (
                   <View
                     key={`cell-${rowIndex}-${colIndex}`}
                     style={{
                       flex: 1,
                       borderWidth: 0.5,
-                      borderTopWidth,
                       borderColor: "#000",
                       alignItems: "center",
                       justifyContent: "center",
-                      backgroundColor: bgColor,
+                      backgroundColor: isCellSelected(rowIndex, colIndex)
+                        ? "#cce5ff"
+                        : "#fff",
                       // @ts-ignore
                       cursor: "pointer",
-                      paddingHorizontal: 4,
                     }}
-                  >
-                    {isTopOfBlock && (
-                      <Text
-                        numberOfLines={1}
-                        style={{ fontWeight: "700", color: "#0A3069" }}
-                      >
-                        {covering?.subject}
-                      </Text>
-                    )}
-                  </View>
+                  />
                 );
               })}
             </View>
           ))}
+          {/* Overlay merged blocks */}
+          {gridSize.width > 0 &&
+            gridSize.height > 0 &&
+            blocks.map((b, i) => {
+              const leftPct = ((b.dayIndex + 1) / TOTAL_COLS) * 100;
+              const topPct = ((b.start + 1) / TOTAL_ROWS) * 100;
+              const widthPct = (1 / TOTAL_COLS) * 100;
+              const heightPct = (b.duration / TOTAL_ROWS) * 100;
+              return (
+                <View
+                  key={`block-${i}`}
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    left: `${leftPct}%`,
+                    top: `${topPct}%`,
+                    width: `${widthPct}%`,
+                    height: `${heightPct}%`,
+                    backgroundColor: "#DDEBFF",
+                    borderWidth: 0.5,
+                    borderColor: "#000",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontWeight: "700",
+                      color: "#0A3069",
+                      fontSize: 12,
+                    }}
+                  >
+                    {b.subject}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{ color: "#0A3069", fontSize: 10 }}
+                  >
+                    {b.building} {b.room}
+                  </Text>
+                </View>
+              );
+            })}
         </View>
         {/* Close menu */}
         {isMenuOpen && (
@@ -425,9 +497,11 @@ export default function ScheduleScreen() {
           clearSelection();
         }}
         onAdd={(entry: any) => {
-          const subject = entry?.subject ?? "";
-          const newBlocks = selectionToBlocks(subject);
-          setBlocks((prev) => [...prev, ...newBlocks]);
+          const newBlocks = selectionToBlocks(entry as ScheduleEntry);
+          setBlocks((prev) => {
+            const next = [...prev, ...newBlocks];
+            return next;
+          });
           setManualVisible(false);
           clearSelection();
         }}
