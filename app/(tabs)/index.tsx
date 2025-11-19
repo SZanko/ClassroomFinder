@@ -58,11 +58,16 @@ export default function MapScreen() {
             // However you encode your indoor target (this is just an example)
             let toId;
             if (criteria.type === 'location' && criteria.building !== null && criteria.room !== null) {
-                const segments: AnySegment[] = await coordinator.routeBuildingToRoom(
-                    'Building VIII',
+                const segments: AnySegment[] = await coordinator.routeGpsToBuildingRoom(
+                    from,
                     criteria.building,
                     criteria.room);
                 setRoute(segments);
+                //const segments: AnySegment[] = await coordinator.routeBuildingToRoom(
+                //    'Building VIII',
+                //    criteria.building,
+                //    criteria.room);
+                //setRoute(segments);
             } else {
                 const sequements = await coordinator.routeGpsToRoom(from, criteria.type)
                 setRoute(sequements);

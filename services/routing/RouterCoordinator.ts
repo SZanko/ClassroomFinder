@@ -81,6 +81,34 @@ export class RouterCoordinator {
     }
 
     /** GPS -> nearest building entrance (outdoor) -> room (indoor) */
+    async routeGpsToBuildingRoom(gps: LngLat, building:string, roomNumber: string): Promise<AnySegment[]> {
+        const buildingLabel = isRomanNumeral(building)
+            ? `Building ${building}`
+            : building;
+        //const entranceId = this.nearestEntrance(gps);
+        //const entrance = this.graph.nodes[entranceId];
+
+        const outdoorSeg = await this.outdoor.routeOutdoorToOutdoor(
+            gps,
+            buildingLabel
+        )
+
+        const lastOutdoorSeg = outdoorSeg[outdoorSeg.length - 1];
+        const lastOutdoorPoint =
+            lastOutdoorSeg.line[lastOutdoorSeg.line.length - 1] as LngLat | undefined;
+
+        if (!lastOutdoorPoint) {
+            throw new Error("Outdoor route has no coordinates");
+        }
+
+        const entranceId = this.nearestEntrance(lastOutdoorPoint);
+
+        const roomKey = this.roomKeyFor(buildingLabel, roomNumber);
+        const indoorSegs = this.indoor.routeEntranceToRoom(entranceId, roomKey);
+
+        return [...outdoorSeg, ...indoorSegs];
+    }
+
     async routeGpsToRoom(gps: LngLat, roomKey: string): Promise<AnySegment[]> {
         const entranceId = this.nearestEntrance(gps);
         const entrance = this.graph.nodes[entranceId];
