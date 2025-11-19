@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,21 +7,20 @@ import {
   TouchableOpacity,
   Platform,
   Alert,
-  Dimensions
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  Dimensions,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
-import { ProfileIcon } from '@/components/ui/profile_icon_button';
-import { UploadScheduleModal } from '@/components/modals/uploadScheduleModal';
-import { ScheduleEntry, HOURS_MAP, DAYS } from '@/assets/data/sample-schedule'; 
-import { AddManualScheduleModal } from '@/components/modals/add-manually-modal';
-import { ScheduleEntryModal } from '@/components/modals/schedule-entry-modal';
-import { EditScheduleModal } from '@/components/modals/edit-schedule-modal';
+import { ProfileIcon } from "@/components/ui/profile_icon_button";
+import { UploadScheduleModal } from "@/components/modals/uploadScheduleModal";
+import { ScheduleEntry, HOURS_MAP, DAYS } from "@/assets/data/sample-schedule";
+import { AddManualScheduleModal } from "@/components/modals/add-manually-modal";
+import { ScheduleEntryModal } from "@/components/modals/schedule-entry-modal";
+import { EditScheduleModal } from "@/components/modals/edit-schedule-modal";
 
-
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const CELL_MIN_WIDTH = (width - 40 - 60) / DAYS.length;
 const CELL_HEIGHT = 40;
@@ -32,7 +31,9 @@ export default function Schedule() {
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
   const [isAddManualModalVisible, setIsAddManualModalVisible] = useState(false);
   const [currentSchedule, setCurrentSchedule] = useState<ScheduleEntry[]>([]);
-  const [selectedEntry, setSelectedEntry] = useState<ScheduleEntry | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<ScheduleEntry | null>(
+    null
+  );
   const [isEntryModalVisible, setIsEntryModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
@@ -52,42 +53,44 @@ export default function Schedule() {
 
   const handleDelete = () => {
     if (!selectedEntry) return;
-    setCurrentSchedule(prev => prev.filter(item => item.id !== selectedEntry.id));
+    setCurrentSchedule((prev) =>
+      prev.filter((item) => item.id !== selectedEntry.id)
+    );
     Alert.alert("Deleted", "Class removed from schedule.");
     handleCloseEntryModal();
   };
 
   const handleEditConfirm = (updatedEntry: ScheduleEntry) => {
-    setCurrentSchedule(prev => 
-      prev.map(e => (e.id === updatedEntry.id ? updatedEntry : e))
+    setCurrentSchedule((prev) =>
+      prev.map((e) => (e.id === updatedEntry.id ? updatedEntry : e))
     );
     Alert.alert("Success", "Class updated.");
   };
 
   const handleEdit = () => {
     if (!selectedEntry) return;
-    setIsEditModalVisible(true); 
+    setIsEditModalVisible(true);
     setIsEntryModalVisible(false);
-    };
+  };
 
   const handleNavigate = () => {
     if (!selectedEntry) return;
     // This will navigate to the Map screen and pass the building/room as params.
     // You will need to update MapScreen to receive these params.
     router.push({
-      pathname: '/',
-      params: { building: selectedEntry.building, room: selectedEntry.room }
+      pathname: "/",
+      params: { building: selectedEntry.building, room: selectedEntry.room },
     });
     handleCloseEntryModal();
   };
 
   const handleMenuOption = (option: string) => {
     setIsMenuOpen(false);
-    if (option === 'Upload Schedule') {
+    if (option === "Upload Schedule") {
       setIsUploadModalVisible(true);
-    } else if (option === 'Add Manually') {
-       setIsAddManualModalVisible(true); 
-    }else {
+    } else if (option === "Add Manually") {
+      setIsAddManualModalVisible(true);
+    } else {
       Alert.alert("Selected", option);
     }
   };
@@ -104,9 +107,9 @@ export default function Schedule() {
   };
 
   const handleAddManualConfirm = (newEntry: ScheduleEntry) => {
-      // Add new entry to the existing array
-      setCurrentSchedule(prev => [...prev, newEntry]);
-      Alert.alert("Success", "Class added to schedule.");
+    // Add new entry to the existing array
+    setCurrentSchedule((prev) => [...prev, newEntry]);
+    Alert.alert("Success", "Class added to schedule.");
   };
 
   // Function to render content inside a grid cell
@@ -123,10 +126,17 @@ export default function Schedule() {
         style={[styles.scheduleEntry, { height: itemHeight - 2 }]}
         onPress={() => handleEntryPress(entry)}
         activeOpacity={0.8}
-      > 
-        <Text style={styles.scheduleEntrySubject}>{entry.subject}{entry.type}</Text>
-        <Text style={styles.scheduleEntryType}>({entry.type.toUpperCase()})</Text>
-        <Text style={styles.scheduleEntryLocation}>{entry.building}/{entry.room}</Text>
+      >
+        <Text style={styles.scheduleEntrySubject}>
+          {entry.subject}
+          {entry.type}
+        </Text>
+        <Text style={styles.scheduleEntryType}>
+          ({entry.type.toUpperCase()})
+        </Text>
+        <Text style={styles.scheduleEntryLocation}>
+          {entry.building}/{entry.room}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -134,11 +144,10 @@ export default function Schedule() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
         {/* --- Header --- */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>My Schedule</Text>
-          <ProfileIcon onPress={handleProfilePress}/>
+          <ProfileIcon onPress={handleProfilePress} />
         </View>
 
         {/* --- The Grid --- */}
@@ -148,7 +157,9 @@ export default function Schedule() {
               <View style={styles.grid}>
                 {/* Header Row (Days) */}
                 <View style={styles.row}>
-                  <View style={[styles.cell, styles.timeCell, styles.headerCell]} />
+                  <View
+                    style={[styles.cell, styles.timeCell, styles.headerCell]}
+                  />
                   {DAYS.map((day) => (
                     <View key={day} style={[styles.cell, styles.headerCell]}>
                       <Text style={styles.headerText}>{day}</Text>
@@ -179,26 +190,39 @@ export default function Schedule() {
 
         {/* --- "Change Schedule" Dropdown Section --- */}
         <View style={styles.actionContainer}>
-          <TouchableOpacity 
-            style={styles.dropdownTrigger} 
+          <TouchableOpacity
+            style={styles.dropdownTrigger}
             onPress={() => setIsMenuOpen(!isMenuOpen)}
             activeOpacity={0.8}
           >
-            <Ionicons name={isMenuOpen ? "remove-circle-outline" : "add-circle-outline"} size={24} color="#333" />
+            <Ionicons
+              name={isMenuOpen ? "remove-circle-outline" : "add-circle-outline"}
+              size={24}
+              color="#333"
+            />
             <Text style={styles.dropdownText}>Change Schedule</Text>
           </TouchableOpacity>
 
           {isMenuOpen && (
             <View style={styles.dropdownMenu}>
-              <TouchableOpacity style={styles.menuOption} onPress={() => handleMenuOption('Upload Schedule')}>
+              <TouchableOpacity
+                style={styles.menuOption}
+                onPress={() => handleMenuOption("Upload Schedule")}
+              >
                 <Text style={styles.menuText}>Upload Schedule</Text>
               </TouchableOpacity>
               <View style={styles.divider} />
-              <TouchableOpacity style={styles.menuOption} onPress={() => handleMenuOption('Add Manually')}>
+              <TouchableOpacity
+                style={styles.menuOption}
+                onPress={() => handleMenuOption("Add Manually")}
+              >
                 <Text style={styles.menuText}>Add Manually</Text>
               </TouchableOpacity>
               <View style={styles.divider} />
-              <TouchableOpacity style={styles.menuOption} onPress={() => handleMenuOption('Add Test/Exam')}>
+              <TouchableOpacity
+                style={styles.menuOption}
+                onPress={() => handleMenuOption("Add Test/Exam")}
+              >
                 <Text style={styles.menuText}>Add Test/Exam</Text>
               </TouchableOpacity>
             </View>
@@ -207,11 +231,11 @@ export default function Schedule() {
 
         {/* --- Navigation Button (Back to Map) --- */}
         <TouchableOpacity
-            style={toggleButtonStyle.toggleButton}
-            onPress={() => router.back()}
-            accessibilityLabel="Go to Map"
+          style={toggleButtonStyle.toggleButton}
+          onPress={() => router.back()}
+          accessibilityLabel="Go to Map"
         >
-            <FontAwesome name="map" size={22} color="#fff" />
+          <FontAwesome name="map" size={22} color="#fff" />
         </TouchableOpacity>
 
         {/* --- Upload Schedule Modal --- */}
@@ -220,7 +244,7 @@ export default function Schedule() {
           onClose={() => setIsUploadModalVisible(false)}
           onUpload={handleUploadConfirm}
         />
-        
+
         <AddManualScheduleModal
           visible={isAddManualModalVisible}
           onClose={() => setIsAddManualModalVisible(false)}
@@ -230,11 +254,11 @@ export default function Schedule() {
 
         {selectedEntry && (
           <EditScheduleModal
-          visible={isEditModalVisible}
-          onClose={handleCloseEditModal}
-          onSubmit={handleEditConfirm}
-          currentSchedule={currentSchedule}
-          entryToEdit={selectedEntry}
+            visible={isEditModalVisible}
+            onClose={handleCloseEditModal}
+            onSubmit={handleEditConfirm}
+            currentSchedule={currentSchedule}
+            entryToEdit={selectedEntry}
           />
         )}
 
@@ -254,103 +278,102 @@ export default function Schedule() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   container: {
     flex: 1,
     padding: 20,
-    paddingTop: Platform.OS === 'android' ? 40 : 0,
+    paddingTop: Platform.OS === "android" ? 40 : 0,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   gridContainer: {
     flex: 1,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
     borderRadius: 5,
-    overflow: 'hidden', // Ensures inner borders don't spill
+    overflow: "hidden", // Ensures inner borders don't spill
   },
-  grid: {
-  },
+  grid: {},
   row: {
-    flexDirection: 'row',
-    height: CELL_HEIGHT, 
+    flexDirection: "row",
+    height: CELL_HEIGHT,
   },
   cell: {
     width: CELL_MIN_WIDTH,
     borderRightWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: '#333',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#333",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 2,
-    position: 'relative',
+    position: "relative",
     zIndex: 1,
   },
   timeCell: {
     width: TIME_COLUMN_WIDTH,
-    backgroundColor: '#f9f9f9',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    backgroundColor: "#f9f9f9",
+    justifyContent: "center",
+    alignItems: "flex-start",
     paddingLeft: 5,
   },
   headerCell: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
     height: 40,
     minHeight: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerText: {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 14,
   },
   timeText: {
     fontSize: 10,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
 
   scheduleEntry: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#ADD8E6',
+    backgroundColor: "#ADD8E6",
     borderRadius: 4,
     padding: 3,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 10,
     //opacity: 0.9,
   },
   scheduleEntrySubject: {
     fontSize: 10,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
   },
   scheduleEntryType: {
-     fontSize: 9,
-     fontWeight: '600',
-     color: '#555',
-     textAlign: 'center',
-     marginBottom: 2,
+    fontSize: 9,
+    fontWeight: "600",
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 2,
   },
   scheduleEntryLocation: {
     fontSize: 8,
-    color: '#555',
-    textAlign: 'center',
+    color: "#555",
+    textAlign: "center",
   },
 
   actionContainer: {
@@ -358,30 +381,30 @@ const styles = StyleSheet.create({
     marginBottom: 70,
   },
   dropdownTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
     borderRadius: 25,
     paddingVertical: 10,
     paddingHorizontal: 15,
-    alignSelf: 'flex-start',
-    backgroundColor: '#fff',
+    alignSelf: "flex-start",
+    backgroundColor: "#fff",
   },
   dropdownText: {
     marginLeft: 8,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   dropdownMenu: {
-    position: 'absolute',
-    bottom: '110%',
+    position: "absolute",
+    bottom: "110%",
     left: 0,
     width: 200,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
@@ -393,10 +416,10 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   divider: {
     height: 1,
-    backgroundColor: '#eee',
-  }
+    backgroundColor: "#eee",
+  },
 });

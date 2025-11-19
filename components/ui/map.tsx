@@ -1,9 +1,9 @@
-import MapView from "react-native-maps";
+// import MapView from "react-native-maps";
 
-export function NavigationMap() {
-    return (
-        <MapView
-            style={{ flex: 1 }}
-        />
-    );
-}
+// export function NavigationMap() {
+//     return (
+//         <MapView
+//             style={{ flex: 1 }}
+//         />
+//     );
+// }
