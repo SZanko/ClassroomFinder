@@ -100,8 +100,24 @@ export default function Schedule() {
   };
 
   const handleProfilePress = () => {
-    console.log("Profile icon pressed");
-    // router.push('/profile');
+    Alert.alert(
+      "Student Name", // Tu bude meno (neskôr ho môžeme ťahať z prihlásenia)
+      "student@fct.unl.pt", // Podnadpis (napr. email)
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Log Out",
+          style: "destructive", // Červené tlačidlo na iOS
+          onPress: () => {
+            // Presmerovanie späť na Login
+            router.replace('/login');
+          }
+        }
+      ]
+    );
   };
 
   const handleUploadConfirm = (schedule: ScheduleEntry[]) => {
@@ -131,7 +147,7 @@ export default function Schedule() {
         onPress={() => handleEntryPress(entry)}
         activeOpacity={0.8}
       > 
-        <Text style={styles.scheduleEntrySubject}>{entry.subject}{entry.type}</Text>
+        <Text style={styles.scheduleEntrySubject}>{entry.subject}</Text>
         <Text style={styles.scheduleEntryType}>({entry.type.toUpperCase()})</Text>
         <Text style={styles.scheduleEntryLocation}>{entry.building}/{entry.room}</Text>
       </TouchableOpacity>

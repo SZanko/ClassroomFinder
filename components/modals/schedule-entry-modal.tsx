@@ -25,18 +25,27 @@ export const ScheduleEntryModal: React.FC<ScheduleEntryModalProps> = ({
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose}>
-        <View style={styles.modalContent}>
-          {/* Header with Class Info */}
-          <Text style={styles.title}>{entry.subject}</Text>
-          <Text style={styles.subtitle}>({entry.type.toUpperCase()}) {entry.building}/{entry.room}</Text>
+        {/* Wrap content in TouchableOpacity without action to prevent modal closing when clicking inside */}
+        <TouchableOpacity activeOpacity={1} style={styles.modalContentWrapper}>
+          <View style={styles.modalContent}>
+            
+            {/* --- CLOSE BUTTON (Top Left Corner) --- */}
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Ionicons name="close" size={24} color="#999" />
+            </TouchableOpacity>
 
-          {/* Action Buttons */}
-          <View style={styles.buttonRow}>
-            <ActionButton icon="trash-outline" text="Delete" onPress={onDelete} color="#FF3B30" />
-            <ActionButton icon="pencil-outline" text="Edit" onPress={onEdit} color="#007AFF" />
-            <ActionButton icon="navigate-outline" text="Navigate" onPress={onNavigate} color="#34C759" />
+            {/* Header with Class Info */}
+            <Text style={styles.title}>{entry.subject}</Text>
+            <Text style={styles.subtitle}>({entry.type.toUpperCase()}) {entry.building}/{entry.room}</Text>
+
+            {/* Action Buttons */}
+            <View style={styles.buttonRow}>
+              <ActionButton icon="trash-outline" text="Delete" onPress={onDelete} color="#FF3B30" />
+              <ActionButton icon="pencil-outline" text="Edit" onPress={onEdit} color="#007AFF" />
+              <ActionButton icon="navigate-outline" text="Navigate" onPress={onNavigate} color="#34C759" />
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </TouchableOpacity>
     </Modal>
   );
@@ -60,6 +69,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
+  modalContentWrapper: {
+    width: '100%',
+  },
   modalContent: {
     backgroundColor: 'white',
     borderRadius: 20,
@@ -71,12 +83,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 5,
+    position: 'relative', // Important for close button positioning
+  },
+  // --- Close Button Style ---
+  closeButton: {
+    position: 'absolute',
+    top: 15,
+    left: 15,
+    zIndex: 10,
+    padding: 5, // Increases touch area
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
+    marginTop: 15, // Added margin to avoid overlap with close button
   },
   subtitle: {
     fontSize: 16,
