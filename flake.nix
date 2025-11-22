@@ -17,17 +17,17 @@
       };
 
       pinnedJDK = pkgs.jdk17;
-      buildToolsVersion = "34.0.0";
+      buildToolsVersion = "36.1.0";
       #ndkVersion = "25.1.8937393";
       ndkVersion = "27.1.12297006";
       androidComposition = pkgs.androidenv.composeAndroidPackages {
         cmdLineToolsVersion = "8.0";
         toolsVersion = "26.1.1";
-        platformToolsVersion = "34.0.5";
-        buildToolsVersions = [ buildToolsVersion "33.0.1" ];
+        platformToolsVersion = "35.0.2";
+        buildToolsVersions = [ buildToolsVersion "36.1.0" ];
         includeEmulator = false;
         emulatorVersion = "30.3.4";
-        platformVersions = [ "34" ];
+        platformVersions = [ "36" ];
         includeSources = false;
         includeSystemImages = false;
         systemImageTypes = [ "google_apis_playstore" ];
@@ -59,11 +59,11 @@
         ];
 
         JAVA_HOME = pinnedJDK;
-        ANDROID_HOME = "${androidComposition.androidsdk}/libexec/android-sdk";
-        ANDROID_SDK_ROOT = ANDROID_HOME;
-        ANDROID_NDK_ROOT = "${ANDROID_SDK_ROOT}/ndk-bundle";
+        #ANDROID_HOME = "${androidComposition.androidsdk}/libexec/android-sdk";
+        #ANDROID_SDK_ROOT = ANDROID_HOME;
+        #ANDROID_NDK_ROOT = "${ANDROID_SDK_ROOT}/ndk-bundle";
 
-        GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_HOME}/build-tools/${buildToolsVersion}/aapt2";
+        #GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_HOME}/build-tools/${buildToolsVersion}/aapt2";
       };
     });
 }
