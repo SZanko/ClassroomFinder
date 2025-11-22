@@ -1,161 +1,145 @@
-import {Image} from 'expo-image';
-import {Platform, StyleSheet, TouchableOpacity, View, FlatList, Text} from 'react-native';
-
-import {HelloWave} from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import {ThemedText} from '@/components/themed-text';
-import {ThemedView} from '@/components/themed-view';
-import {Link, router} from 'expo-router';
-import {FontAwesome} from "@expo/vector-icons";
-import {toggleButtonStyle} from '@/components/ui/toggle-tab-button';
-import {NavigationMap} from '@/components/ui/map';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {SearchWidget, SearchCriteria} from '@/components/ui/search-bar';
-import {coordinator, graph} from "@/services/routing";
-import {
-    Camera,
-    CameraRef
-} from "@maplibre/maplibre-react-native";
-import {GeoPoint} from '@/hooks/use-current-location';
-import {AnySegment, LngLat} from "@/services/routing/types";
-import {SafeAreaView} from 'react-native-safe-area-context';
-
-
-const startRoom = '127'
-const startRoomCoordinates: LngLat = [-9.205344, 38.662565]
-const endRoom = '116'
+import { Image } from 'expo-image';
+import { Platform, StyleSheet, TouchableOpacity, View, Text, Alert } from 'react-native';
+import { router } from 'expo-router';
+import { FontAwesome } from "@expo/vector-icons";
+import { toggleButtonStyle } from '@/components/ui/toggle-tab-button';
+import { NavigationMap } from '@/components/ui/map';
+import React, { useEffect, useState } from 'react';
+import { SearchWidget, SearchCriteria } from '@/components/ui/search-bar';
+import { coordinator } from "@/services/routing";
+import { GeoPoint, useCurrentLocation } from '@/hooks/use-current-location';
+import { AnySegment } from "@/services/routing/types";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ProfileIcon } from '@/components/ui/profile_icon_button';
 
 const floatingButtonStyle = {
-    position: 'absolute' as const,
-    bottom: 20,
-    right: 20,
-    zIndex: 20,
+  position: 'absolute' as const,
+  bottom: 20,
+  right: 20,
+  zIndex: 20,
 };
 
 export default function MapScreen() {
-    const [route, setRoute] = useState<AnySegment[] | null>(null);
+  const [route, setRoute] = useState<AnySegment[] | null>(null);
 
-    // TODO make this dynamic
-    const startingPoint: GeoPoint = {
-        longitude: -9.206151,
-        latitude: 38.661847,
-    };
+  // 1. Get current GPS location
+  const { location: userLocation, isLoading } = useCurrentLocation();
 
-    const handleCompoundSearch = async (criteria: SearchCriteria) => {
-        if (criteria.type === 'location') {
-            console.log("Searching by LOCATION:", criteria.building, criteria.room);
-        } else {
-            console.log("Searching by NAME:", criteria.query);
-        }
+  // 2. Starting point (GPS or School Fallback)
+  const startingPoint: GeoPoint = userLocation || {
+    longitude: -9.206151,
+    latitude: 38.661847,
+  };
 
-
-        try {
-            // This part depends on how your RouterCoordinator is defined.
-            // Typical pattern: coordinator.route(from, to) => AnySegment[]
-            // Assume LngLat is [number, number]:
-            const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
-
-            // However you encode your indoor target (this is just an example)
-            let toId;
-            if (criteria.type === 'location' && criteria.building !== null && criteria.room !== null) {
-                const segments: AnySegment[] = await coordinator.routeBuildingToRoom(
-                    'Building VIII',
-                    criteria.building,
-                    criteria.room);
-                setRoute(segments);
-            } else {
-                const sequements = await coordinator.routeGpsToRoom(from, criteria.type)
-                setRoute(sequements);
-            }
-
-        } catch (e) {
-            console.warn('Failed to compute route', e);
-            setRoute(null);
-        }
-    };
-
-
-    // Room to Room
-    //useEffect(() => {
-    //    //const segments = coordinator.routeRoomToRoom(startRoom, endRoom);
-    //    //const segments = coordinator.routeGpsToRoom(startRoomCoordinates, endRoom);
-    //    setRoute(segments);
-    //}, []);
-
-    // Building to Building
-    //useEffect(() => {
-    //    let cancelled = false;
-
-    //    (async () => {
-    //        try {
-    //            const segments = await coordinator.outdoor.routeOutdoorToOutdoor(
-    //                "Building VIII",
-    //                "Building II",
-    //            );
-    //            if (!cancelled) setRoute(segments);
-    //        } catch (e) {
-    //            console.error(e);
-    //        }
-    //    })();
-
-    //    return () => {
-    //        cancelled = true;
-    //    };
-    //}, [startRoomCoordinates, endRoom]);
-
-    // Outside to Room
-
-    //useEffect(() => {
-    //    let cancelled = false;
-
-    //    (async () => {
-    //        try {
-    //            const segments = await coordinator.routeBuildingToRoom(
-    //                "Building VIII",
-    //                "Building II",
-    //                "128"
-    //            );
-    //            if (!cancelled) setRoute(segments);
-    //        } catch (e) {
-    //            console.error(e);
-    //        }
-    //    })();
-
-    //    return () => {
-    //        cancelled = true;
-    //    };
-    //}, [startRoomCoordinates, endRoom]);
-
-
-    return (
-        <SafeAreaView style={{flex: 1}}>
-            <View style={styles.container}>
-                <NavigationMap route={route}/>
-                <View style={styles.searchContainer}>
-                    {/* This component call remains the same */}
-                    <SearchWidget onSearch={handleCompoundSearch}/>
-                </View>
-
-                <TouchableOpacity
-                    style={[toggleButtonStyle.toggleButton, floatingButtonStyle]}
-                    onPress={() => router.push('/schedule')}
-                    accessibilityLabel="Go to schedule"
-                >
-                    <FontAwesome name="calendar" size={22} color="#fff"/>
-                </TouchableOpacity>
-            </View>
-        </SafeAreaView>
+  const handleProfilePress = () => {
+    Alert.alert(
+      "Student Name",
+      "student@fct.unl.pt",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Log Out", style: "destructive", onPress: () => router.replace('/login') }
+      ]
     );
+  };
+
+  const handleCompoundSearch = async (criteria: SearchCriteria) => {
+    // FIX: We moved the console.log inside the if/else blocks.
+    // TypeScript forbids accessing 'building' before checking criteria.type.
+
+    try {
+      // Convert GeoPoint to [lng, lat] array for the router
+      const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
+      let toId: string = ""; 
+      
+      if (criteria.type === 'location') {
+        console.log("Searching for Location:", criteria.building, criteria.room);
+        // Using only the room number as the ID based on your data structure
+        // Added fallback to empty string to satisfy TypeScript
+        toId = criteria.room || ""; 
+      } else {
+        console.log("Searching for Name:", criteria.query);
+        toId = criteria.query || "";
+      }
+
+      // Validation: If ID is empty, do not proceed
+      if (!toId) {
+        Alert.alert("Error", "Invalid destination target.");
+        return;
+      }
+
+      console.log("ID sent to graph:", toId);
+
+      const segments: AnySegment[] = await coordinator.routeGpsToRoom(from, toId);
+      
+      if (segments && segments.length > 0) {
+          console.log("Route found!");
+          setRoute(segments);
+      } else {
+          console.warn("Route not found (empty result).");
+          Alert.alert("Route not found", `Could not find a path to room '${toId}'.`);
+      }
+
+    } catch (e) {
+      console.warn('Error computing route:', e);
+      Alert.alert("Error", "Failed to compute route. Please check if the room exists in the data.");
+      setRoute(null);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <NavigationMap route={route} />
+        
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <SearchWidget onSearch={handleCompoundSearch} />
+        </View>
+
+        {/* Profile Icon */}
+        <View style={styles.profileContainer}>
+            <ProfileIcon onPress={handleProfilePress} />
+        </View>
+
+
+        {/* Schedule Button */}
+        <TouchableOpacity
+          style={[toggleButtonStyle.toggleButton, floatingButtonStyle]}
+          onPress={() => router.push('/schedule')}
+        >
+          <FontAwesome name="calendar" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {flex: 1},
-    map: {flex: 1},
-    searchContainer: {
-        position: 'absolute',
-        top: Platform.OS === 'ios' ? 60 : 40,
-        left: 20,
-        right: 20,
-        zIndex: 10,
-    },
+  container: { flex: 1 },
+  map: { flex: 1 },
+  searchContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    left: 20,
+    right: 80, 
+    zIndex: 10,
+  },
+  profileContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    right: 20,
+    zIndex: 20,
+  },
+  debugContainer: {
+      position: 'absolute',
+      bottom: 100,
+      left: 20,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      padding: 5,
+      borderRadius: 5,
+  },
+  debugText: {
+      color: 'white',
+      fontSize: 10,
+  }
 });
