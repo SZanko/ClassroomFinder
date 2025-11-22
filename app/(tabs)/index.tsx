@@ -78,6 +78,37 @@ export default function MapScreen() {
           console.warn("Route not found (empty result).");
           Alert.alert("Route not found", `Could not find a path to room '${toId}'.`);
       }
+    const handleCompoundSearch = async (criteria: SearchCriteria) => {
+        if (criteria.type === 'location') {
+            console.log("Searching by LOCATION:", criteria.building, criteria.room);
+        } else {
+            console.log("Searching by NAME:", criteria.query);
+        }
+
+
+        try {
+            // This part depends on how your RouterCoordinator is defined.
+            // Typical pattern: coordinator.route(from, to) => AnySegment[]
+            // Assume LngLat is [number, number]:
+            const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
+
+            // However you encode your indoor target (this is just an example)
+            let toId;
+            if (criteria.type === 'location' && criteria.building !== null && criteria.room !== null) {
+                const segments: AnySegment[] = await coordinator.routeGpsToBuildingRoom(
+                    from,
+                    criteria.building,
+                    criteria.room);
+                setRoute(segments);
+                //const segments: AnySegment[] = await coordinator.routeBuildingToRoom(
+                //    'Building VIII',
+                //    criteria.building,
+                //    criteria.room);
+                //setRoute(segments);
+            } else {
+                const sequements = await coordinator.routeGpsToRoom(from, criteria.type)
+                setRoute(sequements);
+            }
 
     } catch (e) {
       console.warn('Error computing route:', e);

@@ -44,7 +44,8 @@ export class OutdoorRouter {
 
     async routeOutdoorToOutdoor(from: LngLat, to: LngLat): Promise<RouteSegment[]>;
     async routeOutdoorToOutdoor(from: string, to: string): Promise<RouteSegment[]>;
-
+    async routeOutdoorToOutdoor(from: LngLat, to: string): Promise<RouteSegment[]>;
+    async routeOutdoorToOutdoor(from: string, to: LngLat): Promise<RouteSegment[]>;
     async routeOutdoorToOutdoor(from: LngLat | string,
                                 to: LngLat | string): Promise<RouteSegment[]> {
 
