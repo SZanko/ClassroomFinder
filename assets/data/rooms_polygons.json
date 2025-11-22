@@ -1556,8 +1556,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 119",
-        "ref": "119",
+        "name": "Lab. 119",
+        "ref": "Lab. 119",
         "room": "computer",
         "id": "way/1434193875",
         "corridor": false
@@ -1616,8 +1616,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 119-A",
-        "ref": "119-A",
+        "name": "Lab. 119-A",
+        "ref": "Lab. 119-A",
         "room": "laboratory",
         "id": "way/1434193876",
         "corridor": false
@@ -1668,8 +1668,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 120-A",
-        "ref": "120-A",
+        "name": "Lab. 120-A",
+        "ref": "Lab. 120-A",
         "room": "laboratory",
         "id": "way/1434193877",
         "corridor": false
@@ -1712,8 +1712,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 120",
-        "ref": "120",
+        "name": "Lab. 120",
+        "ref": "Lab. 120",
         "room": "computer",
         "id": "way/1434193878",
         "corridor": false
@@ -1768,8 +1768,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 121",
-        "ref": "121",
+        "name": "Lab. 121",
+        "ref": "Lab. 121",
         "room": "computer",
         "id": "way/1434193879",
         "corridor": false
@@ -1828,8 +1828,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 121-A",
-        "ref": "121-A",
+        "name": "Lab. 121-A",
+        "ref": "Lab. 121-A",
         "room": "laboratory",
         "id": "way/1434193880",
         "corridor": false
@@ -1880,8 +1880,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 122-A",
-        "ref": "122-A",
+        "name": "Lab. 122-A",
+        "ref": "Lab. 122-A",
         "room": "laboratory",
         "id": "way/1434193881",
         "corridor": false
@@ -1924,8 +1924,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 122",
-        "ref": "122",
+        "name": "Lab. 122",
+        "ref": "Lab. 122",
         "room": "computer",
         "id": "way/1434193882",
         "corridor": false
@@ -1976,8 +1976,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 123",
-        "ref": "123",
+        "name": "Lab. 123",
+        "ref": "Lab. 123",
         "room": "computer",
         "id": "way/1434193883",
         "corridor": false
@@ -2036,8 +2036,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 123-A",
-        "ref": "123-A",
+        "name": "Lab. 123-A",
+        "ref": "Lab. 123-A",
         "room": "laboratory",
         "id": "way/1434193884",
         "corridor": false
@@ -2088,8 +2088,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 124-A",
-        "ref": "124-A",
+        "name": "Lab. 124-A",
+        "ref": "Lab. 124-A",
         "room": "laboratory",
         "id": "way/1434193885",
         "corridor": false
@@ -2132,8 +2132,8 @@
       "properties": {
         "indoor": "room",
         "level": "-0.5",
-        "name": "Lab 124",
-        "ref": "124",
+        "name": "Lab. 124",
+        "ref": "Lab. 124",
         "room": "computer",
         "id": "way/1434193886",
         "corridor": false
@@ -2964,8 +2964,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 101-E",
-        "ref": "101-E",
+        "name": "Lab. 101-E",
+        "ref": "Lab. 101-E",
         "room": "laboratory",
         "id": "way/1434217364",
         "corridor": false
@@ -3040,8 +3040,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 101-C",
-        "ref": "101-C",
+        "name": "Lab. 101-C",
+        "ref": "Lab. 101-C",
         "room": "laboratory",
         "id": "way/1434217365",
         "corridor": false
@@ -3084,7 +3084,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 101-B",
+        "name": "Lab. 101-B",
+        "ref": "Lab. 101-B",
         "room": "laboratory",
         "id": "way/1434217366",
         "corridor": false
@@ -3176,8 +3177,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 101-A",
-        "ref": "101-A",
+        "name": "Lab. 101-A",
+        "ref": "Lab. 101-A",
         "room": "laboratory",
         "id": "way/1434217368",
         "corridor": false
@@ -3224,8 +3225,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 101-D",
-        "ref": "101-D",
+        "name": "Lab. 101-D",
+        "ref": "Lab. 101-D",
         "room": "laboratory",
         "id": "way/1434217369",
         "corridor": false
@@ -3308,8 +3309,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 102",
-        "ref": "102",
+        "name": "Lab. 102",
+        "ref": "Lab. 102",
         "room": "laboratory",
         "id": "way/1434217370",
         "corridor": false
@@ -3356,8 +3357,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 104-A",
-        "ref": "104-A",
+        "name": "Lab. 104-A",
+        "ref": "Lab. 104-A",
         "room": "laboratory",
         "id": "way/1434217371",
         "corridor": false
@@ -3400,8 +3401,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 103",
-        "ref": "103",
+        "name": "Lab. 103",
+        "ref": "Lab. 103",
         "room": "laboratory",
         "id": "way/1434217372",
         "corridor": false
@@ -3460,8 +3461,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 104-B",
-        "ref": "104-B",
+        "name": "Lab. 104-B",
+        "ref": "Lab. 104-B",
         "id": "way/1434217373",
         "corridor": false
       },
@@ -3511,8 +3512,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 104-C",
-        "ref": "104-C",
+        "name": "Lab. 104-C",
+        "ref": "Lab. 104-C",
         "room": "laboratory",
         "id": "way/1434217374",
         "corridor": false
@@ -3555,8 +3556,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 104-D",
-        "ref": "104-D",
+        "name": "Lab. 104-D",
+        "ref": "Lab. 104-D",
         "room": "laboratory",
         "id": "way/1434217375",
         "corridor": false
@@ -3603,8 +3604,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 104",
-        "ref": "104",
+        "name": "Lab. 104",
+        "ref": "Lab. 104",
         "room": "laboratory",
         "id": "way/1434217376",
         "corridor": false
@@ -3699,8 +3700,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 105-A",
-        "ref": "105-A",
+        "name": "Lab. 105-A",
+        "ref": "Lab. 105-A",
         "room": "laboratory",
         "id": "way/1434217377",
         "corridor": false
@@ -3747,8 +3748,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 105",
-        "ref": "105",
+        "name": "Lab. 105",
+        "ref": "Lab. 105",
         "room": "laboratory",
         "id": "way/1434217378",
         "corridor": false
@@ -3807,8 +3808,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 106",
-        "ref": "106",
+        "name": "Lab. 106",
+        "ref": "Lab. 106",
         "room": "laboratory",
         "id": "way/1434217379",
         "corridor": false
@@ -3867,8 +3868,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 107-A",
-        "ref": "107",
+        "name": "Lab. 107-A",
+        "ref": "Lab. 107",
         "room": "laboratory",
         "id": "way/1434217380",
         "corridor": false
@@ -3911,8 +3912,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 107-B",
-        "ref": "107",
+        "name": "Lab. 107-B",
+        "ref": "Lab. 107",
         "room": "laboratory",
         "id": "way/1434217381",
         "corridor": false
@@ -3955,8 +3956,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 107-C",
-        "ref": "107-C",
+        "name": "Lab. 107-C",
+        "ref": "Lab. 107-C",
         "room": "laboratory",
         "id": "way/1434217382",
         "corridor": false
@@ -4003,8 +4004,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 108",
-        "ref": "108",
+        "name": "Lab. 108",
+        "ref": "Lab.108",
         "room": "laboratory",
         "id": "way/1434217383",
         "corridor": false
@@ -4063,8 +4064,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 109",
-        "ref": "109",
+        "name": "Lab. 109",
+        "ref": "Lab. 109",
         "room": "laboratory",
         "id": "way/1434217384",
         "corridor": false
@@ -4227,8 +4228,8 @@
       "properties": {
         "indoor": "room",
         "level": "0",
-        "name": "Lab 107",
-        "ref": "107",
+        "name": "Lab. 107",
+        "ref": "Lab. 107",
         "room": "laboratory",
         "id": "way/1434217387",
         "corridor": false
