@@ -79,13 +79,19 @@ export default function Schedule() {
 
   const handleNavigate = () => {
     if (!selectedEntry) return;
-    // This will navigate to the Map screen and pass the building/room as params.
-    // You will need to update MapScreen to receive these params.
-    router.push({
-      pathname: '/',
-      params: { building: selectedEntry.building, room: selectedEntry.room }
+
+    
+    router.replace({
+      pathname: '/', 
+      params: { 
+        building: selectedEntry.building, 
+        room: selectedEntry.room 
+      }
     });
-    handleCloseEntryModal();
+
+
+    setIsEntryModalVisible(false);
+    setSelectedEntry(null);
   };
 
   const handleMenuOption = (option: string) => {

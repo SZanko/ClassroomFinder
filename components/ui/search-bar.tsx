@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,24 +9,28 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SelectionModal } from '@/components/modals/selectionmodal';
+
+// --- Data Loading Logic ---
 type RoomEntry = { ref?: string; name?: string; center: [number, number] };
 type RoomsIndex = Record<string, RoomEntry[]>;
 
+// Make sure this path is correct in your project
 import roomsIndexRaw from '@/assets/data/rooms_index.json';
 
 const roomsIndex = roomsIndexRaw as unknown as RoomsIndex;
 
-// Mock Data
+// Mock Data fallback
 const MANUAL: Record<string, string[]> = {
   'VII': ['1A', '2A', '2B'],
   'Library': ['Study Room 1', 'Main Floor', 'Quiet Zone'],
 };
 
-// Define the search criteria types
+// --- Types ---
 export type SearchCriteria =
   | { type: 'location', building: string | null, room: string | null }
   | { type: 'name', query: string };
 
+// --- Helper Functions ---
 function mergeData(a: Record<string,string[]>, b: Record<string,string[]>) {
   const out: Record<string,string[]> = { ...a };
   for (const [k, arr] of Object.entries(b)) {
@@ -36,21 +40,9 @@ function mergeData(a: Record<string,string[]>, b: Record<string,string[]>) {
   return out;
 }
 
-
-const BUILDING_DATA: Record<string, string[]> = mergeData(
-    buildBuildingData(roomsIndex),
-    MANUAL
-);
-
-
-interface SearchWidgetProps {
-  onSearch(criteria: SearchCriteria): void;
-}
-
 function normalizeBuildingName(name: string): string {
   const s = name.trim();
 
-  // direct aliases you care about
   const ALIASES: Record<string, string> = {
     'Edification II': 'II',
     'Edifício II': 'II',
@@ -61,7 +53,6 @@ function normalizeBuildingName(name: string): string {
   };
   if (ALIASES[s]) return ALIASES[s];
 
-  // try to extract roman numeral
   const m = s.match(/\b([IVXLCDM]+)\b/i);
   if (m) return m[1].toUpperCase();
 
@@ -89,14 +80,21 @@ function buildBuildingData(index: RoomsIndex): Record<string, string[]> {
   );
 }
 
+const BUILDING_DATA: Record<string, string[]> = mergeData(
+    buildBuildingData(roomsIndex),
+    MANUAL
+);
 
+interface SearchWidgetProps {
+  onSearch(criteria: SearchCriteria): void;
+  externalSearch?: { building: string; room: string } | null;
+}
 
-export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
+export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSearch }) => {
   const [expanded, setExpanded] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
 
-  // --- New State for Toggled Search ---
   const [searchMode, setSearchMode] = useState<'Location' | 'Name'>('Location');
   const [nameQuery, setNameQuery] = useState('');
   const [lastSearchText, setLastSearchText] = useState('Find a classroom...');
@@ -106,6 +104,15 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
 
   const buildings = useMemo(() => Object.keys(BUILDING_DATA), []);
   const rooms = useMemo(() => selectedBuilding ? BUILDING_DATA[selectedBuilding] : [], [selectedBuilding]);
+
+  useEffect(() => {
+    if (externalSearch) {
+      setSelectedBuilding(externalSearch.building);
+      setSelectedRoom(externalSearch.room);
+      setSearchMode('Location');
+      setLastSearchText(`${externalSearch.building} - ${externalSearch.room}`);
+    }
+  }, [externalSearch]);
 
   const openModal = (type: 'BUILDING' | 'ROOM') => {
     if (type === 'ROOM' && !selectedBuilding) {
@@ -126,20 +133,18 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
     setModalVisible(false);
   };
 
-  // --- Updated Search Handler ---
   const handleSearchPress = () => {
     let searchText = '';
 
     if (searchMode === 'Location') {
-      if (!selectedBuilding) return; // Or show alert
+      if (!selectedBuilding) return;
       onSearch({ type: 'location', building: selectedBuilding, room: selectedRoom });
       searchText = selectedRoom ? `${selectedBuilding} - ${selectedRoom}` : (selectedBuilding || '');
-      setNameQuery(''); // Clear other search type
+      setNameQuery('');
     } else {
-      if (nameQuery.trim() === '') return; // Or show alert
+      if (nameQuery.trim() === '') return;
       onSearch({ type: 'name', query: nameQuery });
       searchText = nameQuery;
-      // Clear other search type
       setSelectedBuilding(null);
       setSelectedRoom(null);
     }
@@ -250,7 +255,6 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch }) => {
   );
 };
 
-// --- Styles ---
 const styles = StyleSheet.create({
   compactContainer: {
     flexDirection: 'row',
@@ -295,7 +299,7 @@ const styles = StyleSheet.create({
   searchButton: { backgroundColor: '#007AFF', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
   searchButtonText: { color: 'white', fontSize: 16, fontWeight: '600' },
 
-  // --- New Styles ---
+  // --- Scope / Toggle Styles ---
   scopeContainer: {
     flexDirection: 'row',
     backgroundColor: '#eee',

@@ -11,6 +11,7 @@ import { GeoPoint, useCurrentLocation } from '@/hooks/use-current-location';
 import { AnySegment } from "@/services/routing/types";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfileIcon } from '@/components/ui/profile_icon_button';
+import { useLocalSearchParams } from 'expo-router';
 
 const floatingButtonStyle = {
   position: 'absolute' as const,
@@ -21,15 +22,32 @@ const floatingButtonStyle = {
 
 export default function MapScreen() {
   const [route, setRoute] = useState<AnySegment[] | null>(null);
+  
+  const [externalSearch, setExternalSearch] = useState<{ building: string; room: string } | null>(null);
 
-  // 1. Get current GPS location
   const { location: userLocation, isLoading } = useCurrentLocation();
 
-  // 2. Starting point (GPS or School Fallback)
   const startingPoint: GeoPoint = userLocation || {
     longitude: -9.206151,
     latitude: 38.661847,
   };
+
+  const params = useLocalSearchParams<{ building: string; room: string }>();
+
+  useEffect(() => {
+    if (params.building && params.room) {
+      const building = params.building;
+      const room = params.room;
+
+      setExternalSearch({ building, room });
+
+      handleCompoundSearch({
+        type: 'location',
+        building: building,
+        room: room
+      });
+    }
+  }, [params.building, params.room]); 
 
   const handleProfilePress = () => {
     Alert.alert(
@@ -43,25 +61,18 @@ export default function MapScreen() {
   };
 
   const handleCompoundSearch = async (criteria: SearchCriteria) => {
-    // FIX: We moved the console.log inside the if/else blocks.
-    // TypeScript forbids accessing 'building' before checking criteria.type.
-
     try {
-      // Convert GeoPoint to [lng, lat] array for the router
       const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
       let toId: string = ""; 
       
       if (criteria.type === 'location') {
         console.log("Searching for Location:", criteria.building, criteria.room);
-        // Using only the room number as the ID based on your data structure
-        // Added fallback to empty string to satisfy TypeScript
         toId = criteria.room || ""; 
       } else {
         console.log("Searching for Name:", criteria.query);
         toId = criteria.query || "";
       }
 
-      // Validation: If ID is empty, do not proceed
       if (!toId) {
         Alert.alert("Error", "Invalid destination target.");
         return;
@@ -93,7 +104,10 @@ export default function MapScreen() {
         
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <SearchWidget onSearch={handleCompoundSearch} />
+          <SearchWidget 
+            onSearch={handleCompoundSearch} 
+            externalSearch={externalSearch}
+          />
         </View>
 
         {/* Profile Icon */}
