@@ -43,51 +43,45 @@ export default function MapScreen() {
   };
 
   const handleCompoundSearch = async (criteria: SearchCriteria) => {
+    // FIX: We moved the console.log inside the if/else blocks.
+    // TypeScript forbids accessing 'building' before checking criteria.type.
+
     try {
-      // 1. Prepare Origin
+      // Convert GeoPoint to [lng, lat] array for the router
       const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
-      let segments: AnySegment[] = [];
-
-      // 2. Handle Search Logic
+      let toId: string = ""; 
+      
       if (criteria.type === 'location') {
-        console.log("Searching by LOCATION:", criteria.building, criteria.room);
-
-        if (!criteria.building || !criteria.room) {
-           Alert.alert("Missing Info", "Please select both building and room.");
-           return;
-        }
-
-        // Assuming your coordinator has a specific method for this:
-        // If not, construct an ID string here.
-        segments = await coordinator.routeGpsToBuildingRoom(
-           from, 
-           criteria.building, 
-           criteria.room
-        );
-
+        console.log("Searching for Location:", criteria.building, criteria.room);
+        // Using only the room number as the ID based on your data structure
+        // Added fallback to empty string to satisfy TypeScript
+        toId = criteria.room || ""; 
       } else {
-        // Search by Name
-        console.log("Searching by NAME:", criteria.query);
-        
-        const query = criteria.query || "";
-        if (!query) return;
-
-        segments = await coordinator.routeGpsToRoom(from, query);
+        console.log("Searching for Name:", criteria.query);
+        toId = criteria.query || "";
       }
 
-      // 3. Update State
+      // Validation: If ID is empty, do not proceed
+      if (!toId) {
+        Alert.alert("Error", "Invalid destination target.");
+        return;
+      }
+
+      console.log("ID sent to graph:", toId);
+
+      const segments: AnySegment[] = await coordinator.routeGpsToRoom(from, toId);
+      
       if (segments && segments.length > 0) {
-        console.log("Route found!");
-        setRoute(segments);
+          console.log("Route found!");
+          setRoute(segments);
       } else {
-        console.warn("Route not found (empty result).");
-        Alert.alert("Route not found", "Could not find a path to the destination.");
-        setRoute(null);
+          console.warn("Route not found (empty result).");
+          Alert.alert("Route not found", `Could not find a path to room '${toId}'.`);
       }
 
     } catch (e) {
       console.warn('Error computing route:', e);
-      Alert.alert("Error", "Failed to compute route. Please check if the destination exists.");
+      Alert.alert("Error", "Failed to compute route. Please check if the room exists in the data.");
       setRoute(null);
     }
   };

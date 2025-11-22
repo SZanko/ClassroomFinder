@@ -9,16 +9,19 @@ import {
   Alert,
   Platform,
   KeyboardAvoidingView,
-  FlatList
+  FlatList,
+  TextInput // Important import for typing
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ScheduleEntry, DAYS } from '@/assets/data/sample-schedule';
 
-const SUBJECTS = ['IPM', 'ML', 'SBD', 'MSP', 'IIO', 'ASPI'];
-const BUILDINGS = ['VII', 'II'];
+// --- Constants for Buildings and Rooms ---
+const BUILDINGS = ['VII', 'II', 'VIII', 'IV']; // You can add more
 const ROOMS_BY_BUILDING: Record<string, string[]> = {
-  'VII': ['1A', '1B', '2A', '2B'],
+  'VII': ['1A', '1B', '2A', '2B', 'Auditório'],
   'II': ['128', '127', 'Lab. 120'],
+  'VIII': ['H1', 'H2'],
+  'IV': ['Amphitheater'],
 };
 
 interface AddManualScheduleModalProps {
@@ -34,7 +37,8 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   onAdd,
   currentSchedule,
 }) => {
-  const [subject, setSubject] = useState('');
+  // --- Form State ---
+  const [subject, setSubject] = useState(''); // Now it's text input
   const [type, setType] = useState<'T' | 'P'>('T');
   const [building, setBuilding] = useState('');
   const [room, setRoom] = useState('');
@@ -42,53 +46,43 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   const [startHour, setStartHour] = useState(8);
   const [endHour, setEndHour] = useState(9);
 
+  // --- Dropdown State (only for Building and Room) ---
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState<'SUBJECT' | 'BUILDING' | 'ROOM'>('SUBJECT');
+  const [modalType, setModalType] = useState<'BUILDING' | 'ROOM'>('BUILDING');
 
   const hours = useMemo(() => Array.from({ length: 16 }, (_, i) => i + 8), []);
   const availableRooms = useMemo(() => building ? ROOMS_BY_BUILDING[building] || [] : [], [building]);
 
-   const openModal = (type: 'SUBJECT' | 'BUILDING' | 'ROOM') => {
+  // --- Dropdown Functions ---
+  const openModal = (type: 'BUILDING' | 'ROOM') => {
      if (type === 'ROOM' && !building) {
-        Alert.alert("Select Building First", "Please select a building before choosing a room.");
-        return;
-      }
-      setModalType(type);
-      setModalVisible(true);
-   };
+       Alert.alert("Select Building First", "Please select a building before choosing a room.");
+       return;
+     }
+     setModalType(type);
+     setModalVisible(true);
+  };
 
-   const handleSelect = (item: string) => {
+  const handleSelect = (item: string) => {
+     switch (modalType) {
+       case 'BUILDING': setBuilding(item); setRoom(''); break;
+       case 'ROOM': setRoom(item); break;
+     }
+     setModalVisible(false);
+  };
+
+  const getModalData = () => {
       switch (modalType) {
-        case 'SUBJECT': setSubject(item); break;
-        case 'BUILDING': setBuilding(item); setRoom(''); break;
-        case 'ROOM': setRoom(item); break;
+       case 'BUILDING': return BUILDINGS;
+       case 'ROOM': return availableRooms;
+       default: return [];
       }
-      setModalVisible(false);
-    };
+  };
 
-   const getModalData = () => {
-       switch (modalType) {
-        case 'SUBJECT': return SUBJECTS;
-        case 'BUILDING': return BUILDINGS;
-        case 'ROOM': return availableRooms;
-        default: return [];
-      }
-    };
-
-    const resetForm = () => {
-      setSubject('');
-      setBuilding('');
-      setRoom('');
-      setType('T');
-      setDay(DAYS[0]);
-      setStartHour(8);
-      setEndHour(9);
-    };
-
-
+  // --- Submission ---
   const handleSubmit = () => {
     if (!subject || !building || !room) {
-      Alert.alert("Missing Info", "Please fill in all fields.");
+      Alert.alert("Missing Info", "Please fill in subject, building and room.");
       return;
     }
     if (endHour <= startHour) {
@@ -100,23 +94,23 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
     const newDuration = endHour - startHour;
     const newEnd = newStart + newDuration;
 
+    // Conflict Check (overlapping classes)
     const hasConflict = currentSchedule.some((entry) => {
       if (entry.day !== day) return false;
-
       const entryStart = entry.hourIndex;
       const entryEnd = entry.hourIndex + entry.duration;
-
       return newStart < entryEnd && entryStart < newEnd;
     });
 
     if (hasConflict) {
-      Alert.alert("Schedule Conflict", `You already have a class at this time on ${day}.`);
+      Alert.alert("Schedule Conflict", `You already have a class at this time (${day}).`);
       return;
     }
 
+    // Create new entry
     const newEntry: ScheduleEntry = {
-      id: Date.now().toString(),
-      subject,
+      id: Math.random().toString(36).substr(2, 9), // Random ID
+      subject, // Stores what was typed
       type,
       building,
       room,
@@ -130,28 +124,51 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
     onClose();
   };
 
+  const resetForm = () => {
+    setSubject('');
+    setBuilding('');
+    setRoom('');
+    setType('T');
+    setStartHour(8);
+    setEndHour(9);
+    setDay(DAYS[0]);
+  };
+
   return (
-      <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
-         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+      <KeyboardAvoidingView 
+        // FIX: On Android, 'height' often causes jumping. 'undefined' lets native OS handle it.
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+        style={styles.modalOverlay}
+      >
         <View style={styles.modalContent}>
+          
+          {/* Modal Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Add Class Manually</Text>
+            <Text style={styles.title}>Add Class</Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled" // Helps with dismissing keyboard
+          >
             
+            {/* --- Subject as TextInput --- */}
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 2, marginRight: 10 }]}>
-                <Text style={styles.label}>Subject</Text>
-                <DropdownField 
-                  placeholder="Select Subject" 
-                  value={subject} 
-                  onPress={() => openModal('SUBJECT')} 
+                <Text style={styles.label}>Subject Name</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="E.g. IPM"
+                  value={subject}
+                  onChangeText={setSubject}
+                  placeholderTextColor="#999"
                 />
               </View>
+              
               <View style={[styles.inputGroup, { flex: 1 }]}>
                 <Text style={styles.label}>Type</Text>
                 <View style={styles.typeSelector}>
@@ -169,6 +186,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
               </View>
             </View>
 
+            {/* Building and Room Selection */}
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                 <Text style={styles.label}>Building</Text>
@@ -189,6 +207,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
               </View>
             </View>
 
+            {/* Day Selection */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Day</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalSelect}>
@@ -200,8 +219,9 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
               </ScrollView>
             </View>
 
+            {/* Time Selection */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Start Hour</Text>
+              <Text style={styles.label}>Start</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalSelect}>
                   {hours.map((h) => (
                       <TouchableOpacity key={`start-${h}`} style={[styles.timeButton, startHour === h && styles.activeSelectButton]} onPress={() => setStartHour(h)}>
@@ -211,7 +231,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
               </ScrollView>
             </View>
             <View style={[styles.inputGroup, { marginTop: 15 }]}>
-              <Text style={styles.label}>End Hour (Duration: {endHour - startHour}h)</Text>
+              <Text style={styles.label}>End (Duration: {endHour - startHour}h)</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalSelect}>
                   {hours.map((h) => (
                       <TouchableOpacity key={`end-${h}`} style={[styles.timeButton, endHour === h && styles.activeSelectButton]} onPress={() => setEndHour(h)}>
@@ -229,10 +249,11 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
         </View>
       </KeyboardAvoidingView>
 
+      {/* Helper Modal for Building/Room Selection */}
       <Modal visible={modalVisible} transparent={true} animationType="fade" onRequestClose={() => setModalVisible(false)}>
         <TouchableOpacity style={styles.selectionModalOverlay} activeOpacity={1} onPress={() => setModalVisible(false)}>
           <View style={styles.selectionModalContent}>
-            <Text style={styles.selectionModalTitle}>Select {modalType.charAt(0) + modalType.slice(1).toLowerCase()}</Text>
+            <Text style={styles.selectionModalTitle}>Select {modalType === 'BUILDING' ? 'Building' : 'Room'}</Text>
             <FlatList
               data={getModalData()}
               keyExtractor={(item) => item}
@@ -240,7 +261,6 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
                 <TouchableOpacity style={styles.selectionItem} onPress={() => handleSelect(item)}>
                   <Text style={styles.selectionItemText}>{item}</Text>
                   {(
-                    (modalType === 'SUBJECT' && item === subject) ||
                     (modalType === 'BUILDING' && item === building) ||
                     (modalType === 'ROOM' && item === room)
                   ) && <Ionicons name="checkmark" size={20} color="#007AFF" />}
@@ -254,6 +274,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   );
 };
 
+// --- Helper Component for Dropdown ---
 const DropdownField = ({ placeholder, value, onPress, disabled = false }: { placeholder: string, value: string, onPress: () => void, disabled?: boolean }) => (
   <TouchableOpacity 
     style={[styles.dropdownField, disabled && styles.disabledDropdown]} 
@@ -267,6 +288,7 @@ const DropdownField = ({ placeholder, value, onPress, disabled = false }: { plac
   </TouchableOpacity>
 );
 
+// --- Styles ---
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -278,7 +300,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    maxHeight: '85%',
+    maxHeight: '90%',
   },
   header: {
     flexDirection: 'row',
@@ -295,12 +317,23 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   inputGroup: {
+    // marginBottom: 15,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
+  },
+  // Style for Text Input
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+    fontSize: 16,
+    color: '#000',
   },
   dropdownField: {
     flexDirection: 'row',
@@ -329,7 +362,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     overflow: 'hidden',
-    height: 48,
+    height: 48, // To match input height
   },
   typeButton: {
     flex: 1,
@@ -348,9 +381,9 @@ const styles = StyleSheet.create({
   activeTypeText: {
     color: 'white',
   },
-  // Scroll Selectors
   horizontalSelect: {
     flexDirection: 'row',
+    marginBottom: 5,
   },
   selectButton: {
     paddingVertical: 8,
@@ -397,7 +430,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-
   selectionModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
