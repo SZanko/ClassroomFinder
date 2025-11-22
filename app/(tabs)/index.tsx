@@ -43,76 +43,51 @@ export default function MapScreen() {
   };
 
   const handleCompoundSearch = async (criteria: SearchCriteria) => {
-    // FIX: We moved the console.log inside the if/else blocks.
-    // TypeScript forbids accessing 'building' before checking criteria.type.
-
     try {
-      // Convert GeoPoint to [lng, lat] array for the router
+      // 1. Prepare Origin
       const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
-      let toId: string = ""; 
-      
+      let segments: AnySegment[] = [];
+
+      // 2. Handle Search Logic
       if (criteria.type === 'location') {
-        console.log("Searching for Location:", criteria.building, criteria.room);
-        // Using only the room number as the ID based on your data structure
-        // Added fallback to empty string to satisfy TypeScript
-        toId = criteria.room || ""; 
-      } else {
-        console.log("Searching for Name:", criteria.query);
-        toId = criteria.query || "";
-      }
+        console.log("Searching by LOCATION:", criteria.building, criteria.room);
 
-      // Validation: If ID is empty, do not proceed
-      if (!toId) {
-        Alert.alert("Error", "Invalid destination target.");
-        return;
-      }
-
-      console.log("ID sent to graph:", toId);
-
-      const segments: AnySegment[] = await coordinator.routeGpsToRoom(from, toId);
-      
-      if (segments && segments.length > 0) {
-          console.log("Route found!");
-          setRoute(segments);
-      } else {
-          console.warn("Route not found (empty result).");
-          Alert.alert("Route not found", `Could not find a path to room '${toId}'.`);
-      }
-    const handleCompoundSearch = async (criteria: SearchCriteria) => {
-        if (criteria.type === 'location') {
-            console.log("Searching by LOCATION:", criteria.building, criteria.room);
-        } else {
-            console.log("Searching by NAME:", criteria.query);
+        if (!criteria.building || !criteria.room) {
+           Alert.alert("Missing Info", "Please select both building and room.");
+           return;
         }
 
+        // Assuming your coordinator has a specific method for this:
+        // If not, construct an ID string here.
+        segments = await coordinator.routeGpsToBuildingRoom(
+           from, 
+           criteria.building, 
+           criteria.room
+        );
 
-        try {
-            // This part depends on how your RouterCoordinator is defined.
-            // Typical pattern: coordinator.route(from, to) => AnySegment[]
-            // Assume LngLat is [number, number]:
-            const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
+      } else {
+        // Search by Name
+        console.log("Searching by NAME:", criteria.query);
+        
+        const query = criteria.query || "";
+        if (!query) return;
 
-            // However you encode your indoor target (this is just an example)
-            let toId;
-            if (criteria.type === 'location' && criteria.building !== null && criteria.room !== null) {
-                const segments: AnySegment[] = await coordinator.routeGpsToBuildingRoom(
-                    from,
-                    criteria.building,
-                    criteria.room);
-                setRoute(segments);
-                //const segments: AnySegment[] = await coordinator.routeBuildingToRoom(
-                //    'Building VIII',
-                //    criteria.building,
-                //    criteria.room);
-                //setRoute(segments);
-            } else {
-                const sequements = await coordinator.routeGpsToRoom(from, criteria.type)
-                setRoute(sequements);
-            }
+        segments = await coordinator.routeGpsToRoom(from, query);
+      }
+
+      // 3. Update State
+      if (segments && segments.length > 0) {
+        console.log("Route found!");
+        setRoute(segments);
+      } else {
+        console.warn("Route not found (empty result).");
+        Alert.alert("Route not found", "Could not find a path to the destination.");
+        setRoute(null);
+      }
 
     } catch (e) {
       console.warn('Error computing route:', e);
-      Alert.alert("Error", "Failed to compute route. Please check if the room exists in the data.");
+      Alert.alert("Error", "Failed to compute route. Please check if the destination exists.");
       setRoute(null);
     }
   };
@@ -131,7 +106,6 @@ export default function MapScreen() {
         <View style={styles.profileContainer}>
             <ProfileIcon onPress={handleProfilePress} />
         </View>
-
 
         {/* Schedule Button */}
         <TouchableOpacity
