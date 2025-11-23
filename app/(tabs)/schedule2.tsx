@@ -180,6 +180,14 @@ export default function ScheduleScreen() {
     return newBlocks;
   };
 
+  // Color helper: 'T' -> light blue, 'P' -> dark blue
+  const getColorsForBlock = (b: GridBlock) => {
+    const subj = b.subject || "";
+    if (subj.includes("P")) return { bg: "#0A3069", fg: "#fff" }; // practical -> dark
+    if (subj.includes("T")) return { bg: "#cce5ff", fg: "#0A3069" }; // theoretical -> light
+    return { bg: "#DDEBFF", fg: "#0A3069" }; // default
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View
@@ -289,6 +297,7 @@ export default function ScheduleScreen() {
               const topPct = ((b.start + 1) / TOTAL_ROWS) * 100;
               const widthPct = (1 / TOTAL_COLS) * 100;
               const heightPct = (b.duration / TOTAL_ROWS) * 100;
+              const { bg, fg } = getColorsForBlock(b);
               return (
                 <View
                   key={`block-${i}`}
@@ -299,7 +308,7 @@ export default function ScheduleScreen() {
                     top: `${topPct}%`,
                     width: `${widthPct}%`,
                     height: `${heightPct}%`,
-                    backgroundColor: "#DDEBFF",
+                    backgroundColor: bg,
                     borderWidth: 0.5,
                     borderColor: "#000",
                     justifyContent: "center",
@@ -311,16 +320,13 @@ export default function ScheduleScreen() {
                     numberOfLines={1}
                     style={{
                       fontWeight: "700",
-                      color: "#0A3069",
+                      color: fg,
                       fontSize: 12,
                     }}
                   >
                     {b.subject}
                   </Text>
-                  <Text
-                    numberOfLines={1}
-                    style={{ color: "#0A3069", fontSize: 10 }}
-                  >
+                  <Text numberOfLines={1} style={{ color: fg, fontSize: 10 }}>
                     {b.building} {b.room}
                   </Text>
                 </View>
@@ -347,18 +353,21 @@ export default function ScheduleScreen() {
             zIndex: 10,
             marginBottom: 180,
             marginTop: 20,
+            height: 60, // fixed height so grid above stays constant
+            position: "relative", // allow absolute children
           }}
         >
           {/* Change Schedule Button */}
           <View
             style={{
-              alignSelf: "flex-start",
+              position: "absolute",
+              left: 0,
+              top: 0,
               backgroundColor: "#fff",
               borderWidth: 1,
               borderColor: "#007AFF",
               borderRadius: 12,
               overflow: "hidden",
-              position: "absolute",
             }}
           >
             <TouchableOpacity
@@ -368,7 +377,7 @@ export default function ScheduleScreen() {
                 paddingVertical: 10,
                 paddingHorizontal: 15,
                 backgroundColor: "#007AFF",
-                height: 60,
+                height: 59,
                 width: 180,
               }}
               onPress={() => setIsMenuOpen(!isMenuOpen)}
@@ -445,12 +454,32 @@ export default function ScheduleScreen() {
               </View>
             )}
           </View>
-
+          {/* Trash button positioned separately so it doesn't affect layout */}
+          {blocks.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setBlocks([])}
+              accessibilityLabel="Clear all classes"
+              style={{
+                position: "absolute",
+                left: 190, // right of Change Schedule
+                top: 0,
+                width: 60,
+                height: 60,
+                backgroundColor: "#FF3B30",
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name="trash-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          )}
           {/* Navigation button */}
           <View
             style={{
               position: "absolute",
               right: 0,
+              top: 0,
               width: 60,
               height: 60,
               borderRadius: 24,
