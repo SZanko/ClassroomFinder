@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Modal,
   View,
@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface SelectionModalProps {
   visible: boolean;
@@ -28,28 +28,30 @@ export const SelectionModal: React.FC<SelectionModalProps> = ({
 }) => {
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
-      <TouchableOpacity 
-        style={styles.modalOverlay} 
-        activeOpacity={1} 
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
         onPress={onClose}
       >
         <View style={styles.modalContent}>
           <Text style={styles.modalHeader}>{title}</Text>
           {data.length === 0 ? (
-             <Text style={styles.emptyText}>No options available</Text>
+            <Text style={styles.emptyText}>No options available</Text>
           ) : (
             <FlatList
               data={data}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
-                <TouchableOpacity 
-                  style={styles.modalItem} 
+                <TouchableOpacity
+                  style={styles.modalItem}
                   onPress={() => onSelect(item)}
                 >
-                  <Text style={[
-                    styles.modalItemText, 
-                    item === selectedItem && styles.selectedItemText
-                  ]}>
+                  <Text
+                    style={[
+                      styles.modalItemText,
+                      item === selectedItem && styles.selectedItemText,
+                    ]}
+                  >
                     {item}
                   </Text>
                   {item === selectedItem && (
@@ -68,41 +70,41 @@ export const SelectionModal: React.FC<SelectionModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
     padding: 20,
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 15,
-    maxHeight: '50%',
+    maxHeight: "50%",
     padding: 20,
   },
   modalHeader: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   modalItemText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   selectedItemText: {
-    color: '#007AFF',
-    fontWeight: '600',
+    color: "#007AFF",
+    fontWeight: "600",
   },
   emptyText: {
-      textAlign: 'center',
-      color: '#999',
-      paddingVertical: 20,
-  }
+    textAlign: "center",
+    color: "#999",
+    paddingVertical: 20,
+  },
 });

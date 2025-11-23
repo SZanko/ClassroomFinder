@@ -6,7 +6,13 @@ import { View, Text, TouchableOpacity, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
-import { DAYS, HOURS_MAP, ScheduleEntry, BasicManualEntry, SAMPLE_SCHEDULE } from "../../assets/data/sample-schedule";
+import {
+  DAYS,
+  HOURS_MAP,
+  ScheduleEntry,
+  BasicManualEntry,
+  SAMPLE_SCHEDULE,
+} from "../../assets/data/sample-schedule";
 import { UploadScheduleModal } from "../../components/modals/uploadScheduleModal";
 import { ScheduleEntryModal } from "../../components/modals/schedule-entry-modal";
 import { EditScheduleModal2 } from "../../components/modals/edit-schedule-modal";
@@ -21,7 +27,7 @@ const HOURS: string[] = (() => {
   return arr;
 })();
 
-const GRID_HEIGHT = 640;
+const GRID_HEIGHT = 510;
 
 type GridBlock = {
   dayIndex: number;
@@ -36,16 +42,19 @@ type GridBlock = {
 export default function ScheduleScreen() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
-  const [isSelecting, setIsSelecting] = useState(false);
 
   const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
   const [basicModalVisible, setBasicModalVisible] = useState(false);
   const [timeModalVisible, setTimeModalVisible] = useState(false);
   const [blocks, setBlocks] = useState<GridBlock[]>([]);
-  const [clickedExistingBlock, setClickedExistingBlock] = useState(false);
+
   const [entryModalVisible, setEntryModalVisible] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState<ScheduleEntry | null>(null);
-  const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<ScheduleEntry | null>(
+    null,
+  );
+  const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(
+    null,
+  );
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
 
@@ -92,7 +101,7 @@ export default function ScheduleScreen() {
         (b) =>
           b.dayIndex === dayIndex &&
           hour >= b.start &&
-          hour < b.start + b.duration
+          hour < b.start + b.duration,
       ) || null
     );
   };
@@ -108,60 +117,40 @@ export default function ScheduleScreen() {
     return { row, col } as const;
   };
 
-  const addCell = (row: number, col: number) => {
+  // Tap to toggle selection for multiple slots; confirm with checkmark button
+  const toggleCellSelection = (row: number, col: number) => {
+    if (row === 0 || col === 0) return;
+    if (getBlockAt(row, col)) return;
+    const key = getKey(row, col);
     setSelectedCells((prev) => {
-      const key = getKey(row, col);
-      // Prevent selecting a cell that already belongs to an existing block
-      if (prev.has(key)) return prev;
-      if (getBlockAt(row, col)) return prev; // occupied -> skip so we don't overwrite
       const next = new Set(prev);
-      next.add(key);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
       return next;
     });
   };
 
-  const handleGridGrant = (e: any) => {
-    const { locationX, locationY } = e.nativeEvent;
-    const cell = pointToCell(locationX, locationY);
-    if (!cell) return;
-    setIsSelecting(true);
-    addCell(cell.row, cell.col);
-  };
-  const handleGridMove = (e: any) => {
-    if (!isSelecting) return;
-    const { locationX, locationY } = e.nativeEvent;
-    const cell = pointToCell(locationX, locationY);
-    if (cell) addCell(cell.row, cell.col);
-  };
-  const handleGridRelease = () => {
-    setIsSelecting(false);
-    if (clickedExistingBlock) {
-      setClickedExistingBlock(false);
-      return;
-    }
-    if (selectedCells.size > 0) setBasicModalVisible(true);
-  };
   const onGridLayout = (e: any) => {
     const { width, height } = e.nativeEvent.layout || {};
     if (width && height) setGridSize({ width, height });
   };
 
-
-
-  // Color helper: 'T' -> dark blue, 'P' -> light blue (based on type field)
   const getColorsForBlock = (b: GridBlock) => {
     if (b.type === "T") return { bg: "#0A3069", fg: "#fff" }; // theoretical
     if (b.type === "P") return { bg: "#cce5ff", fg: "#0A3069" }; // practical
-    return { bg: "#DDEBFF", fg: "#0A3069" }; // fallback
+    return { bg: "#DDEBFF", fg: "#0A3069" };
   };
 
   const handleNavigate = () => {
     if (!selectedEntry) return;
-      router.push({
-        pathname: "/",
-        params: { building: selectedEntry.building, room: selectedEntry.room },
-      });
-      };
+    router.push({
+      pathname: "/",
+      params: { building: selectedEntry.building, room: selectedEntry.room },
+    });
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View
@@ -191,13 +180,9 @@ export default function ScheduleScreen() {
         </View>
         <View
           onLayout={onGridLayout}
-          onStartShouldSetResponder={() => true}
-          onMoveShouldSetResponder={() => true}
-          onResponderGrant={handleGridGrant}
-          onResponderMove={handleGridMove}
-          onResponderRelease={handleGridRelease}
+          onStartShouldSetResponder={() => false}
+          onMoveShouldSetResponder={() => false}
           style={{
-            // Replace flex:1 with a fixed taller height
             height: GRID_HEIGHT,
             // flex:1,
             marginTop: 16,
@@ -245,7 +230,7 @@ export default function ScheduleScreen() {
                 }
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={`cell-${rowIndex}-${colIndex}`}
                     style={{
                       flex: 1,
@@ -259,6 +244,8 @@ export default function ScheduleScreen() {
 
                       cursor: "pointer",
                     }}
+                    activeOpacity={0.8}
+                    onPress={() => toggleCellSelection(rowIndex, colIndex)}
                   />
                 );
               })}
@@ -294,7 +281,10 @@ export default function ScheduleScreen() {
                     const entry: ScheduleEntry = {
                       id: `b-${i}`,
                       subject: b.subject,
-                      type: b.type === "T" || b.type === "P" ? (b.type as "T" | "P") : "T",
+                      type:
+                        b.type === "T" || b.type === "P"
+                          ? (b.type as "T" | "P")
+                          : "T",
                       building: b.building,
                       room: b.room,
                       day: DAYS[b.dayIndex],
@@ -344,8 +334,8 @@ export default function ScheduleScreen() {
             zIndex: 10,
             marginBottom: 180,
             marginTop: 20,
-            height: 60, // fixed height so grid above stays constant
-            position: "relative", // allow absolute children
+            height: 60,
+            position: "relative",
           }}
         >
           {/* Change Schedule Button */}
@@ -446,16 +436,15 @@ export default function ScheduleScreen() {
               </View>
             )}
           </View>
-          {/* Trash button positioned separately so it doesn't affect layout */}
+          {/* Trash button */}
           {blocks.length > 0 && (
             <TouchableOpacity
               onPress={() => setBlocks([])}
-              accessibilityLabel="Clear all classes"
               style={{
                 position: "absolute",
-                left: 190, // right of Change Schedule
+                left: 190,
                 // top: 60,
-                width: 60,
+                width: 40,
                 height: 60,
                 backgroundColor: "#FF3B30",
                 borderRadius: 12,
@@ -464,6 +453,29 @@ export default function ScheduleScreen() {
               }}
             >
               <Ionicons name="trash-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          )}
+          {/* Add Class after selecting */}
+          {selectedCells.size > 0 && (
+            <TouchableOpacity
+              onPress={() => setBasicModalVisible(true)}
+              style={{
+                position: "absolute",
+                left: 240,
+                // top: 60,
+                width: 40,
+                height: 60,
+                backgroundColor: "#30FF41",
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={24}
+                color="#fff"
+              />
             </TouchableOpacity>
           )}
           {/* Navigation button */}
@@ -608,7 +620,9 @@ export default function ScheduleScreen() {
         }}
         onDelete={() => {
           if (selectedBlockIndex !== null) {
-            setBlocks((prev) => prev.filter((_, i) => i !== selectedBlockIndex));
+            setBlocks((prev) =>
+              prev.filter((_, i) => i !== selectedBlockIndex),
+            );
           }
           setEntryModalVisible(false);
           setSelectedEntry(null);
@@ -641,19 +655,21 @@ export default function ScheduleScreen() {
         }}
         onSave={(updated) => {
           if (selectedBlockIndex !== null) {
-            setBlocks((prev) => prev.map((b, i) => {
-              if (i !== selectedBlockIndex) return b;
-              const dayIndex = DAYS.indexOf(updated.day);
-              return {
-                dayIndex,
-                start: updated.start,
-                duration: updated.end - updated.start,
-                subject: updated.subject,
-                building: updated.building,
-                room: updated.room,
-                type: updated.type,
-              };
-            }));
+            setBlocks((prev) =>
+              prev.map((b, i) => {
+                if (i !== selectedBlockIndex) return b;
+                const dayIndex = DAYS.indexOf(updated.day);
+                return {
+                  dayIndex,
+                  start: updated.start,
+                  duration: updated.end - updated.start,
+                  subject: updated.subject,
+                  building: updated.building,
+                  room: updated.room,
+                  type: updated.type,
+                };
+              }),
+            );
           }
           setSelectedEntry(updated);
           setEditModalVisible(false);

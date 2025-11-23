@@ -1,41 +1,42 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Keyboard,
-  TextInput
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { SelectionModal } from '@/components/modals/selectionmodal';
+  TextInput,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { SelectionModal } from "@/components/modals/selectionmodal";
+
+// Make sure this path is correct in your project
+import roomsIndexRaw from "@/assets/data/rooms_index.json";
 
 // --- Data Loading Logic ---
 type RoomEntry = { ref?: string; name?: string; center: [number, number] };
 type RoomsIndex = Record<string, RoomEntry[]>;
 
-// Make sure this path is correct in your project
-import roomsIndexRaw from '@/assets/data/rooms_index.json';
-
 const roomsIndex = roomsIndexRaw as unknown as RoomsIndex;
 
 // Mock Data fallback
 const MANUAL: Record<string, string[]> = {
-  'VII': ['1A', '2A', '2B'],
-  'Library': ['Study Room 1', 'Main Floor', 'Quiet Zone'],
+  VII: ["1A", "2A", "2B"],
+  Library: ["Study Room 1", "Main Floor", "Quiet Zone"],
 };
 
 // --- Types ---
 export type SearchCriteria =
-  | { type: 'location', building: string | null, room: string | null }
-  | { type: 'name', query: string };
+  | { type: "location"; building: string | null; room: string | null }
+  | { type: "name"; query: string };
 
 // --- Helper Functions ---
-function mergeData(a: Record<string,string[]>, b: Record<string,string[]>) {
-  const out: Record<string,string[]> = { ...a };
+function mergeData(a: Record<string, string[]>, b: Record<string, string[]>) {
+  const out: Record<string, string[]> = { ...a };
   for (const [k, arr] of Object.entries(b)) {
-    out[k] = Array.from(new Set([...(out[k] ?? []), ...arr]))
-        .sort((x, y) => x.localeCompare(y, undefined, { numeric: true }));
+    out[k] = Array.from(new Set([...(out[k] ?? []), ...arr])).sort((x, y) =>
+      x.localeCompare(y, undefined, { numeric: true }),
+    );
   }
   return out;
 }
@@ -44,12 +45,12 @@ function normalizeBuildingName(name: string): string {
   const s = name.trim();
 
   const ALIASES: Record<string, string> = {
-    'Edification II': 'II',
-    'Edifício II': 'II',
-    'Edificio II': 'II',
-    'Building II': 'II',
-    'Edifício 2': 'II',
-    'II': 'II',
+    "Edification II": "II",
+    "Edifício II": "II",
+    "Edificio II": "II",
+    "Building II": "II",
+    "Edifício 2": "II",
+    II: "II",
   };
   if (ALIASES[s]) return ALIASES[s];
 
@@ -67,22 +68,24 @@ function buildBuildingData(index: RoomsIndex): Record<string, string[]> {
     if (!out[key]) out[key] = new Set<string>();
 
     for (const r of rooms) {
-      const label = (r.ref || r.name || '').trim();
+      const label = (r.ref || r.name || "").trim();
       if (label) out[key].add(label);
     }
   }
 
   return Object.fromEntries(
-      Object.entries(out).map(([k, set]) => [
-        k,
-        Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
-      ]),
+    Object.entries(out).map(([k, set]) => [
+      k,
+      Array.from(set).sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true }),
+      ),
+    ]),
   );
 }
 
 const BUILDING_DATA: Record<string, string[]> = mergeData(
-    buildBuildingData(roomsIndex),
-    MANUAL
+  buildBuildingData(roomsIndex),
+  MANUAL,
 );
 
 interface SearchWidgetProps {
@@ -90,32 +93,38 @@ interface SearchWidgetProps {
   externalSearch?: { building: string; room: string } | null;
 }
 
-export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSearch }) => {
+export const SearchWidget: React.FC<SearchWidgetProps> = ({
+  onSearch,
+  externalSearch,
+}) => {
   const [expanded, setExpanded] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
 
-  const [searchMode, setSearchMode] = useState<'Location' | 'Name'>('Location');
-  const [nameQuery, setNameQuery] = useState('');
-  const [lastSearchText, setLastSearchText] = useState('Find a classroom...');
+  const [searchMode, setSearchMode] = useState<"Location" | "Name">("Location");
+  const [nameQuery, setNameQuery] = useState("");
+  const [lastSearchText, setLastSearchText] = useState("Find a classroom...");
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState<'BUILDING' | 'ROOM'>('BUILDING');
+  const [modalType, setModalType] = useState<"BUILDING" | "ROOM">("BUILDING");
 
   const buildings = useMemo(() => Object.keys(BUILDING_DATA), []);
-  const rooms = useMemo(() => selectedBuilding ? BUILDING_DATA[selectedBuilding] : [], [selectedBuilding]);
+  const rooms = useMemo(
+    () => (selectedBuilding ? BUILDING_DATA[selectedBuilding] : []),
+    [selectedBuilding],
+  );
 
   useEffect(() => {
     if (externalSearch) {
       setSelectedBuilding(externalSearch.building);
       setSelectedRoom(externalSearch.room);
-      setSearchMode('Location');
+      setSearchMode("Location");
       setLastSearchText(`${externalSearch.building} - ${externalSearch.room}`);
     }
   }, [externalSearch]);
 
-  const openModal = (type: 'BUILDING' | 'ROOM') => {
-    if (type === 'ROOM' && !selectedBuilding) {
+  const openModal = (type: "BUILDING" | "ROOM") => {
+    if (type === "ROOM" && !selectedBuilding) {
       console.warn("Select a building first");
       return;
     }
@@ -124,7 +133,7 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSe
   };
 
   const handleSelect = (item: string) => {
-    if (modalType === 'BUILDING') {
+    if (modalType === "BUILDING") {
       setSelectedBuilding(item);
       setSelectedRoom(null);
     } else {
@@ -134,16 +143,22 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSe
   };
 
   const handleSearchPress = () => {
-    let searchText = '';
+    let searchText = "";
 
-    if (searchMode === 'Location') {
+    if (searchMode === "Location") {
       if (!selectedBuilding) return;
-      onSearch({ type: 'location', building: selectedBuilding, room: selectedRoom });
-      searchText = selectedRoom ? `${selectedBuilding} - ${selectedRoom}` : (selectedBuilding || '');
-      setNameQuery('');
+      onSearch({
+        type: "location",
+        building: selectedBuilding,
+        room: selectedRoom,
+      });
+      searchText = selectedRoom
+        ? `${selectedBuilding} - ${selectedRoom}`
+        : selectedBuilding || "";
+      setNameQuery("");
     } else {
-      if (nameQuery.trim() === '') return;
-      onSearch({ type: 'name', query: nameQuery });
+      if (nameQuery.trim() === "") return;
+      onSearch({ type: "name", query: nameQuery });
       searchText = nameQuery;
       setSelectedBuilding(null);
       setSelectedRoom(null);
@@ -157,15 +172,18 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSe
   // --- Compact View ---
   if (!expanded) {
     return (
-      <TouchableOpacity 
-        style={styles.compactContainer} 
-        activeOpacity={0.9} 
+      <TouchableOpacity
+        style={styles.compactContainer}
+        activeOpacity={0.9}
         onPress={() => setExpanded(true)}
       >
-        <Ionicons name="search" size={20} color="#666" style={{ marginRight: 8 }} />
-        <Text style={styles.placeholderText}>
-          {lastSearchText}
-        </Text>
+        <Ionicons
+          name="search"
+          size={20}
+          color="#666"
+          style={{ marginRight: 8 }}
+        />
+        <Text style={styles.placeholderText}>{lastSearchText}</Text>
       </TouchableOpacity>
     );
   }
@@ -178,25 +196,52 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSe
       {/* --- Segmented Control --- */}
       <View style={styles.scopeContainer}>
         <TouchableOpacity
-          style={[styles.scopeButton, searchMode === 'Location' && styles.activeScopeButton]}
-          onPress={() => setSearchMode('Location')}
+          style={[
+            styles.scopeButton,
+            searchMode === "Location" && styles.activeScopeButton,
+          ]}
+          onPress={() => setSearchMode("Location")}
         >
-          <Text style={[styles.scopeText, searchMode === 'Location' && styles.activeScopeText]}>By Location</Text>
+          <Text
+            style={[
+              styles.scopeText,
+              searchMode === "Location" && styles.activeScopeText,
+            ]}
+          >
+            By Location
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.scopeButton, searchMode === 'Name' && styles.activeScopeButton]}
-          onPress={() => setSearchMode('Name')}
+          style={[
+            styles.scopeButton,
+            searchMode === "Name" && styles.activeScopeButton,
+          ]}
+          onPress={() => setSearchMode("Name")}
         >
-          <Text style={[styles.scopeText, searchMode === 'Name' && styles.activeScopeText]}>By Name</Text>
+          <Text
+            style={[
+              styles.scopeText,
+              searchMode === "Name" && styles.activeScopeText,
+            ]}
+          >
+            By Name
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* --- Conditional Inputs --- */}
-      {searchMode === 'Location' ? (
+      {searchMode === "Location" ? (
         <>
           <Text style={styles.label}>Building:</Text>
-          <TouchableOpacity style={styles.selector} onPress={() => openModal('BUILDING')}>
-            <Text style={selectedBuilding ? styles.selectorText : styles.placeholderText}>
+          <TouchableOpacity
+            style={styles.selector}
+            onPress={() => openModal("BUILDING")}
+          >
+            <Text
+              style={
+                selectedBuilding ? styles.selectorText : styles.placeholderText
+              }
+            >
               {selectedBuilding || "Select Building"}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#666" />
@@ -204,12 +249,20 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSe
 
           <Text style={styles.label}>Room:</Text>
           <TouchableOpacity
-            style={[styles.selector, !selectedBuilding && styles.disabledSelector]}
-            onPress={() => openModal('ROOM')}
+            style={[
+              styles.selector,
+              !selectedBuilding && styles.disabledSelector,
+            ]}
+            onPress={() => openModal("ROOM")}
             activeOpacity={!selectedBuilding ? 1 : 0.2}
           >
-            <Text style={selectedRoom ? styles.selectorText : styles.placeholderText}>
-              {selectedRoom || (selectedBuilding ? "Select Room" : "Select Building First")}
+            <Text
+              style={
+                selectedRoom ? styles.selectorText : styles.placeholderText
+              }
+            >
+              {selectedRoom ||
+                (selectedBuilding ? "Select Room" : "Select Building First")}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#666" />
           </TouchableOpacity>
@@ -230,24 +283,37 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSe
 
       {/* --- Action Buttons --- */}
       <View style={styles.buttonRow}>
-          <TouchableOpacity onPress={() => setExpanded(false)} style={styles.cancelButton}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={handleSearchPress} 
-            style={[styles.searchButton, (searchMode === 'Location' && !selectedBuilding) && { opacity: 0.5 }, (searchMode === 'Name' && nameQuery.trim() === '') && { opacity: 0.5 }]}
-            disabled={(searchMode === 'Location' && !selectedBuilding) || (searchMode === 'Name' && nameQuery.trim() === '')}
-           >
-              <Text style={styles.searchButtonText}>Search</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setExpanded(false)}
+          style={styles.cancelButton}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleSearchPress}
+          style={[
+            styles.searchButton,
+            searchMode === "Location" && !selectedBuilding && { opacity: 0.5 },
+            searchMode === "Name" &&
+              nameQuery.trim() === "" && { opacity: 0.5 },
+          ]}
+          disabled={
+            (searchMode === "Location" && !selectedBuilding) ||
+            (searchMode === "Name" && nameQuery.trim() === "")
+          }
+        >
+          <Text style={styles.searchButtonText}>Search</Text>
+        </TouchableOpacity>
       </View>
 
       {/* --- Reusable Modal --- */}
       <SelectionModal
         visible={modalVisible}
-        title={modalType === 'BUILDING' ? 'Select Building' : 'Select Room'}
-        data={modalType === 'BUILDING' ? buildings : rooms}
-        selectedItem={modalType === 'BUILDING' ? selectedBuilding : selectedRoom}
+        title={modalType === "BUILDING" ? "Select Building" : "Select Room"}
+        data={modalType === "BUILDING" ? buildings : rooms}
+        selectedItem={
+          modalType === "BUILDING" ? selectedBuilding : selectedRoom
+        }
         onClose={() => setModalVisible(false)}
         onSelect={handleSelect}
       />
@@ -257,52 +323,68 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({ onSearch, externalSe
 
 const styles = StyleSheet.create({
   compactContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
     borderRadius: 10,
     padding: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 5,
   },
-  placeholderText: { color: '#999', fontSize: 16 },
+  placeholderText: { color: "#999", fontSize: 16 },
   expandedContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 15,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 10,
   },
-  headerText: { fontSize: 18, fontWeight: 'bold', marginBottom: 15 },
-  label: { fontSize: 14, fontWeight: '600', color: '#333', marginTop: 10, marginBottom: 5 },
+  headerText: { fontSize: 18, fontWeight: "bold", marginBottom: 15 },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 10,
+    marginBottom: 5,
+  },
   selector: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: "#eee",
     borderRadius: 8,
     padding: 12,
   },
-  disabledSelector: { backgroundColor: '#f5f5f5', borderColor: '#f0f0f0' },
-  selectorText: { fontSize: 16, color: '#000' },
-  buttonRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20, gap: 10 },
+  disabledSelector: { backgroundColor: "#f5f5f5", borderColor: "#f0f0f0" },
+  selectorText: { fontSize: 16, color: "#000" },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 20,
+    gap: 10,
+  },
   cancelButton: { paddingVertical: 10, paddingHorizontal: 15 },
-  cancelButtonText: { color: '#666', fontSize: 16 },
-  searchButton: { backgroundColor: '#007AFF', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
-  searchButtonText: { color: 'white', fontSize: 16, fontWeight: '600' },
+  cancelButtonText: { color: "#666", fontSize: 16 },
+  searchButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  searchButtonText: { color: "white", fontSize: 16, fontWeight: "600" },
 
   // --- Scope / Toggle Styles ---
   scopeContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#eee',
+    flexDirection: "row",
+    backgroundColor: "#eee",
     borderRadius: 8,
     padding: 2,
     marginBottom: 10,
@@ -310,12 +392,12 @@ const styles = StyleSheet.create({
   scopeButton: {
     flex: 1,
     paddingVertical: 8,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 6,
   },
   activeScopeButton: {
-    backgroundColor: '#fff',
-    shadowColor: '#000',
+    backgroundColor: "#fff",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -323,20 +405,20 @@ const styles = StyleSheet.create({
   },
   scopeText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
+    fontWeight: "500",
+    color: "#666",
   },
   activeScopeText: {
-    color: '#000',
-    fontWeight: '600',
+    color: "#000",
+    fontWeight: "600",
   },
   inputField: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: "#eee",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#000',
+    color: "#000",
   },
 });

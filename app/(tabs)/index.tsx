@@ -1,20 +1,26 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet, TouchableOpacity, View, Text, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { Image } from "expo-image";
+import {
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Text,
+  Alert,
+} from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
-import { toggleButtonStyle } from '@/components/ui/toggle-tab-button';
-import { NavigationMap } from '@/components/ui/map';
-import React, { useEffect, useState } from 'react';
-import { SearchWidget, SearchCriteria } from '@/components/ui/search-bar';
+import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
+import { NavigationMap } from "@/components/ui/map";
+import React, { useEffect, useState } from "react";
+import { SearchWidget, SearchCriteria } from "@/components/ui/search-bar";
 import { coordinator } from "@/services/routing";
-import { GeoPoint, useCurrentLocation } from '@/hooks/use-current-location';
+import { GeoPoint, useCurrentLocation } from "@/hooks/use-current-location";
 import { AnySegment } from "@/services/routing/types";
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ProfileIcon } from '@/components/ui/profile_icon_button';
-import { useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ProfileIcon } from "@/components/ui/profile_icon_button";
 
 const floatingButtonStyle = {
-  position: 'absolute' as const,
+  position: "absolute" as const,
   bottom: 20,
   right: 20,
   zIndex: 20,
@@ -22,8 +28,11 @@ const floatingButtonStyle = {
 
 export default function MapScreen() {
   const [route, setRoute] = useState<AnySegment[] | null>(null);
-  
-  const [externalSearch, setExternalSearch] = useState<{ building: string; room: string } | null>(null);
+
+  const [externalSearch, setExternalSearch] = useState<{
+    building: string;
+    room: string;
+  } | null>(null);
 
   const { location: userLocation, isLoading } = useCurrentLocation();
 
@@ -42,32 +51,39 @@ export default function MapScreen() {
       setExternalSearch({ building, room });
 
       handleCompoundSearch({
-        type: 'location',
+        type: "location",
         building: building,
-        room: room
+        room: room,
       });
     }
-  }, [params.building, params.room]); 
+  }, [params.building, params.room]);
 
   const handleProfilePress = () => {
-    Alert.alert(
-      "Student Name",
-      "student@fct.unl.pt",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Log Out", style: "destructive", onPress: () => router.replace('/login') }
-      ]
-    );
+    Alert.alert("Student Name", "student@fct.unl.pt", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Log Out",
+        style: "destructive",
+        onPress: () => router.replace("/login"),
+      },
+    ]);
   };
 
   const handleCompoundSearch = async (criteria: SearchCriteria) => {
     try {
-      const from: [number, number] = [startingPoint.longitude, startingPoint.latitude];
-      let toId: string = ""; 
-      
-      if (criteria.type === 'location') {
-        console.log("Searching for Location:", criteria.building, criteria.room);
-        toId = criteria.room || ""; 
+      const from: [number, number] = [
+        startingPoint.longitude,
+        startingPoint.latitude,
+      ];
+      let toId: string = "";
+
+      if (criteria.type === "location") {
+        console.log(
+          "Searching for Location:",
+          criteria.building,
+          criteria.room,
+        );
+        toId = criteria.room || "";
       } else {
         console.log("Searching for Name:", criteria.query);
         toId = criteria.query || "";
@@ -80,19 +96,27 @@ export default function MapScreen() {
 
       console.log("ID sent to graph:", toId);
 
-      const segments: AnySegment[] = await coordinator.routeGpsToRoom(from, toId);
-      
-      if (segments && segments.length > 0) {
-          console.log("Route found!");
-          setRoute(segments);
-      } else {
-          console.warn("Route not found (empty result).");
-          Alert.alert("Route not found", `Could not find a path to room '${toId}'.`);
-      }
+      const segments: AnySegment[] = await coordinator.routeGpsToRoom(
+        from,
+        toId,
+      );
 
+      if (segments && segments.length > 0) {
+        console.log("Route found!");
+        setRoute(segments);
+      } else {
+        console.warn("Route not found (empty result).");
+        Alert.alert(
+          "Route not found",
+          `Could not find a path to room '${toId}'.`,
+        );
+      }
     } catch (e) {
-      console.warn('Error computing route:', e);
-      Alert.alert("Error", "Failed to compute route. Please check if the room exists in the data.");
+      console.warn("Error computing route:", e);
+      Alert.alert(
+        "Error",
+        "Failed to compute route. Please check if the room exists in the data.",
+      );
       setRoute(null);
     }
   };
@@ -101,24 +125,24 @@ export default function MapScreen() {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <NavigationMap route={route} />
-        
+
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <SearchWidget 
-            onSearch={handleCompoundSearch} 
+          <SearchWidget
+            onSearch={handleCompoundSearch}
             externalSearch={externalSearch}
           />
         </View>
 
         {/* Profile Icon */}
         <View style={styles.profileContainer}>
-            <ProfileIcon onPress={handleProfilePress} />
+          <ProfileIcon onPress={handleProfilePress} />
         </View>
 
         {/* Schedule Button */}
         <TouchableOpacity
           style={[toggleButtonStyle.toggleButton, floatingButtonStyle]}
-          onPress={() => router.push('/schedule')}
+          onPress={() => router.push("/schedule")}
         >
           <FontAwesome name="calendar" size={22} color="#fff" />
         </TouchableOpacity>
@@ -134,25 +158,25 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: Platform.OS === "ios" ? 60 : 40,
     left: 20,
-    right: 80, 
+    right: 80,
     zIndex: 10,
   },
   profileContainer: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
+    position: "absolute",
+    top: Platform.OS === "ios" ? 60 : 40,
     right: 20,
     zIndex: 20,
   },
   debugContainer: {
-      position: 'absolute',
-      bottom: 100,
-      left: 20,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      padding: 5,
-      borderRadius: 5,
+    position: "absolute",
+    bottom: 100,
+    left: 20,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    padding: 5,
+    borderRadius: 5,
   },
   debugText: {
-      color: 'white',
-      fontSize: 10,
-  }
+    color: "white",
+    fontSize: 10,
+  },
 });
