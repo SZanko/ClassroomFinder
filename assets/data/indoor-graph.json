@@ -2924,7 +2924,7 @@
     }
   ],
   "rooms": {
-    "102": {
+    "Lab. 102": {
       "node": "0:n103",
       "level": "0",
       "center": [
@@ -2932,9 +2932,9 @@
         38.661157200000005
       ],
       "building": "Building II",
-      "ref": "102"
+      "ref": "Lab. 102"
     },
-    "103": {
+    "Lab. 103": {
       "node": "0:n46",
       "level": "0",
       "center": [
@@ -2942,9 +2942,9 @@
         38.66112095
       ],
       "building": "Building II",
-      "ref": "103"
+      "ref": "Lab. 103"
     },
-    "104": {
+    "Lab. 104": {
       "node": "0:n121",
       "level": "0",
       "center": [
@@ -2952,9 +2952,9 @@
         38.66107705
       ],
       "building": "Building II",
-      "ref": "104"
+      "ref": "Lab. 104"
     },
-    "105": {
+    "Lab. 105": {
       "node": "0:n118",
       "level": "0",
       "center": [
@@ -2962,9 +2962,9 @@
         38.6610526
       ],
       "building": "Building II",
-      "ref": "105"
+      "ref": "Lab. 105"
     },
-    "106": {
+    "Lab. 106": {
       "node": "0:n116",
       "level": "0",
       "center": [
@@ -2972,9 +2972,9 @@
         38.661016599999996
       ],
       "building": "Building II",
-      "ref": "106"
+      "ref": "Lab. 106"
     },
-    "107": {
+    "Lab. 107": {
       "node": "0:n109",
       "level": "0",
       "center": [
@@ -2982,9 +2982,9 @@
         38.66097285
       ],
       "building": "Building II",
-      "ref": "107"
+      "ref": "Lab. 107"
     },
-    "108": {
+    "Lab. 108": {
       "node": "0:n125",
       "level": "0",
       "center": [
@@ -2992,9 +2992,9 @@
         38.6609139
       ],
       "building": "Building II",
-      "ref": "108"
+      "ref": "Lab. 108"
     },
-    "109": {
+    "Lab. 109": {
       "node": "0:n139",
       "level": "0",
       "center": [
@@ -3002,9 +3002,9 @@
         38.66094665
       ],
       "building": "Building II",
-      "ref": "109"
+      "ref": "Lab. 109"
     },
-    "110": {
+    "Lab. 110": {
       "node": "0:n97",
       "level": "0",
       "center": [
@@ -3012,9 +3012,9 @@
         38.66093505
       ],
       "building": "Building II",
-      "ref": "110"
+      "ref": "Lab. 110"
     },
-    "111": {
+    "Lab. 111": {
       "node": "0:n94",
       "level": "0",
       "center": [
@@ -3022,9 +3022,9 @@
         38.66091735
       ],
       "building": "Building II",
-      "ref": "111"
+      "ref": "Lab. 111"
     },
-    "112": {
+    "Lab. 112": {
       "node": "0:n95",
       "level": "0",
       "center": [
@@ -3032,9 +3032,9 @@
         38.66098435
       ],
       "building": "Building II",
-      "ref": "112"
+      "ref": "Lab. 112"
     },
-    "114": {
+    "Lab. 114": {
       "node": "0:n86",
       "level": "0",
       "center": [
@@ -3042,9 +3042,9 @@
         38.6610323
       ],
       "building": "Building II",
-      "ref": "114"
+      "ref": "Lab. 114"
     },
-    "115": {
+    "Lab. 115": {
       "node": "0:n24",
       "level": "0",
       "center": [
@@ -3052,9 +3052,9 @@
         38.660953899999996
       ],
       "building": "Building II",
-      "ref": "115"
+      "ref": "Lab. 115"
     },
-    "116": {
+    "Lab. 116": {
       "node": "0:n85",
       "level": "0",
       "center": [
@@ -3062,9 +3062,9 @@
         38.66107985
       ],
       "building": "Building II",
-      "ref": "116"
+      "ref": "Lab. 116"
     },
-    "117": {
+    "Lab. 117": {
       "node": "0:n27",
       "level": "0",
       "center": [
@@ -3072,9 +3072,9 @@
         38.661000900000005
       ],
       "building": "Building II",
-      "ref": "117"
+      "ref": "Lab. 117"
     },
-    "119": {
+    "Lab. 119": {
       "node": "0:n49",
       "level": "0",
       "center": [
@@ -3082,9 +3082,9 @@
         38.66120425
       ],
       "building": "Building II",
-      "ref": "119"
+      "ref": "Lab. 119"
     },
-    "120": {
+    "Lab. 120": {
       "node": "0:n83",
       "level": "0",
       "center": [
@@ -3092,9 +3092,9 @@
         38.6612681
       ],
       "building": "Building II",
-      "ref": "120"
+      "ref": "Lab. 120"
     },
-    "121": {
+    "Lab. 121": {
       "node": "0:n62",
       "level": "0",
       "center": [
@@ -3102,9 +3102,9 @@
         38.661307550000004
       ],
       "building": "Building II",
-      "ref": "121"
+      "ref": "Lab. 121"
     },
-    "122": {
+    "Lab. 122": {
       "node": "0:n89",
       "level": "0",
       "center": [
@@ -3112,9 +3112,9 @@
         38.66137075
       ],
       "building": "Building II",
-      "ref": "122"
+      "ref": "Lab. 122"
     },
-    "123": {
+    "Lab. 123": {
       "node": "0:n90",
       "level": "0",
       "center": [
@@ -3122,9 +3122,9 @@
         38.66141115
       ],
       "building": "Building II",
-      "ref": "123"
+      "ref": "Lab. 123"
     },
-    "124": {
+    "Lab. 124": {
       "node": "0:n92",
       "level": "0",
       "center": [
@@ -3132,7 +3132,7 @@
         38.6614768
       ],
       "building": "Building II",
-      "ref": "124"
+      "ref": "Lab. 124"
     },
     "127": {
       "node": "0:n150",
@@ -3174,7 +3174,7 @@
       "building": "Biblioteca FCT/UNL",
       "ref": "Sala Ágora"
     },
-    "101-A": {
+    "Lab. 101-A": {
       "node": "0:n104",
       "level": "0",
       "center": [
@@ -3182,9 +3182,9 @@
         38.66115345
       ],
       "building": "Building II",
-      "ref": "101-A"
+      "ref": "Lab. 101-A"
     },
-    "101-C": {
+    "Lab. 101-C": {
       "node": "0:n106",
       "level": "0",
       "center": [
@@ -3192,9 +3192,9 @@
         38.6612212
       ],
       "building": "Building II",
-      "ref": "101-C"
+      "ref": "Lab. 101-C"
     },
-    "101-D": {
+    "Lab. 101-D": {
       "node": "0:n64",
       "level": "0",
       "center": [
@@ -3202,9 +3202,9 @@
         38.66116875
       ],
       "building": "Building II",
-      "ref": "101-D"
+      "ref": "Lab. 101-D"
     },
-    "101-E": {
+    "Lab. 101-E": {
       "node": "0:n67",
       "level": "0",
       "center": [
@@ -3214,7 +3214,7 @@
       "building": "Building II",
       "ref": "101-E"
     },
-    "104-A": {
+    "Lab. 104-A": {
       "node": "0:n102",
       "level": "0",
       "center": [
@@ -3222,9 +3222,9 @@
         38.66113155
       ],
       "building": "Building II",
-      "ref": "104-A"
+      "ref": "Lab. 104-A"
     },
-    "104-B": {
+    "Lab. 104-B": {
       "node": "0:n99",
       "level": "0",
       "center": [
@@ -3232,9 +3232,9 @@
         38.66109205
       ],
       "building": "Building II",
-      "ref": "104-B"
+      "ref": "Lab. 104-B"
     },
-    "104-C": {
+    "Lab. 104-C": {
       "node": "0:n123",
       "level": "0",
       "center": [
@@ -3242,9 +3242,9 @@
         38.661072649999994
       ],
       "building": "Building II",
-      "ref": "104-C"
+      "ref": "Lab. 104-C"
     },
-    "104-D": {
+    "Lab. 104-D": {
       "node": "0:n162",
       "level": "0",
       "center": [
@@ -3252,9 +3252,9 @@
         38.66104985
       ],
       "building": "Building II",
-      "ref": "104-D"
+      "ref": "Lab. 104-D"
     },
-    "105-A": {
+    "Lab. 105-A": {
       "node": "0:n119",
       "level": "0",
       "center": [
@@ -3262,9 +3262,9 @@
         38.6610466
       ],
       "building": "Building II",
-      "ref": "105-A"
+      "ref": "Lab. 105-A"
     },
-    "107-C": {
+    "Lab. 107-C": {
       "node": "0:n112",
       "level": "0",
       "center": [
@@ -3272,9 +3272,9 @@
         38.6609446
       ],
       "building": "Building II",
-      "ref": "107-C"
+      "ref": "Lab. 107-C"
     },
-    "119-A": {
+    "Lab. 119-A": {
       "node": "0:n77",
       "level": "0",
       "center": [
@@ -3282,9 +3282,9 @@
         38.6611945
       ],
       "building": "Building II",
-      "ref": "119-A"
+      "ref": "Lab. 119-A"
     },
-    "120-A": {
+    "Lab. 120-A": {
       "node": "0:n83",
       "level": "0",
       "center": [
@@ -3292,9 +3292,9 @@
         38.66121845
       ],
       "building": "Building II",
-      "ref": "120-A"
+      "ref": "Lab. 120-A"
     },
-    "121-A": {
+    "Lab. 121-A": {
       "node": "0:n84",
       "level": "0",
       "center": [
@@ -3302,9 +3302,9 @@
         38.661296750000005
       ],
       "building": "Building II",
-      "ref": "121-A"
+      "ref": "Lab. 121-A"
     },
-    "122-A": {
+    "Lab. 122-A": {
       "node": "0:n89",
       "level": "0",
       "center": [
@@ -3312,9 +3312,9 @@
         38.661321599999994
       ],
       "building": "Building II",
-      "ref": "122-A"
+      "ref": "Lab. 122-A"
     },
-    "123-A": {
+    "Lab. 123-A": {
       "node": "0:n91",
       "level": "0",
       "center": [
@@ -3322,9 +3322,9 @@
         38.661400900000004
       ],
       "building": "Building II",
-      "ref": "123-A"
+      "ref": "Lab. 123-A"
     },
-    "124-A": {
+    "Lab. 124-A": {
       "node": "0:n92",
       "level": "0",
       "center": [
@@ -3332,9 +3332,9 @@
         38.661426500000005
       ],
       "building": "Building II",
-      "ref": "124-A"
+      "ref": "Lab. 124-A"
     },
-    "Lab 101-B": {
+    "Lab. 101-B": {
       "node": "0:n105",
       "level": "0",
       "center": [
@@ -3342,7 +3342,7 @@
         38.661196200000006
       ],
       "building": "Building II",
-      "ref": "Lab 101-B"
+      "ref": "Lab. 101-B"
     },
     "P1/1": {
       "node": "0:n130",
