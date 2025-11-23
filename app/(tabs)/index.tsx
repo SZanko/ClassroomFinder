@@ -219,9 +219,9 @@ export default function MapScreen() {
             onPress={handleToggleNavigation}
           >
             {isNavigating ? (
-              <FontAwesome name="navicon" size={28} color="#fff" />
+              <FontAwesome6 name="xmark" size={28} color="#fff" />
             ) : (
-              <AntDesign name="close" size={28} color="#fff" />
+              <FontAwesome name="location-arrow" size={28} color="#fff" />
             )}
           </TouchableOpacity>
         )}
