@@ -22,6 +22,10 @@ const HOURS: string[] = (() => {
   return arr;
 })();
 
+// Fixed height for the schedule grid (increase as requested)
+// const GRID_HEIGHT = 640; // adjust this value if you want it even taller
+const GRID_HEIGHT = 640; // adjust this value if you want it even taller
+
 // Local shape for painted blocks on the grid
 type GridBlock = {
   dayIndex: number;
@@ -30,6 +34,7 @@ type GridBlock = {
   subject: string;
   building: string;
   room: string;
+  type: string;
 };
 
 export default function ScheduleScreen() {
@@ -90,7 +95,7 @@ export default function ScheduleScreen() {
     );
   };
 
-  const TOTAL_ROWS = 17;
+  const TOTAL_ROWS = 14;
   const TOTAL_COLS = 6;
   const pointToCell = (x: number, y: number) => {
     const { width, height } = gridSize;
@@ -104,7 +109,9 @@ export default function ScheduleScreen() {
   const addCell = (row: number, col: number) => {
     setSelectedCells((prev) => {
       const key = getKey(row, col);
+      // Prevent selecting a cell that already belongs to an existing block
       if (prev.has(key)) return prev;
+      if (getBlockAt(row, col)) return prev; // occupied -> skip so we don't overwrite
       const next = new Set(prev);
       next.add(key);
       return next;
@@ -171,6 +178,7 @@ export default function ScheduleScreen() {
             subject: entry.subject,
             building: entry.building,
             room: entry.room,
+            type: entry.type
           });
           start = cur;
         }
@@ -224,7 +232,9 @@ export default function ScheduleScreen() {
           onResponderMove={handleGridMove}
           onResponderRelease={handleGridRelease}
           style={{
-            flex: 1,
+            // Replace flex:1 with a fixed taller height
+            height: GRID_HEIGHT,
+            // flex:1,
             marginTop: 16,
             borderWidth: 1,
             borderColor: "#000",
@@ -234,7 +244,7 @@ export default function ScheduleScreen() {
             userSelect: "none",
           }}
         >
-          {Array.from({ length: 17 }).map((_, rowIndex) => (
+          {Array.from({ length: 14 }).map((_, rowIndex) => (
             <View
               key={`row-${rowIndex}`}
               style={{ flex: 1, flexDirection: "row" }}
@@ -329,6 +339,7 @@ export default function ScheduleScreen() {
                   <Text numberOfLines={1} style={{ color: fg, fontSize: 10 }}>
                     {b.building} {b.room}
                   </Text>
+                  <Text style={{ color: fg, fontSize: 10 }}>{b.type}</Text>
                 </View>
               );
             })}
@@ -362,7 +373,7 @@ export default function ScheduleScreen() {
             style={{
               position: "absolute",
               left: 0,
-              top: 0,
+              // top: 60,
               backgroundColor: "#fff",
               borderWidth: 1,
               borderColor: "#007AFF",
@@ -462,7 +473,7 @@ export default function ScheduleScreen() {
               style={{
                 position: "absolute",
                 left: 190, // right of Change Schedule
-                top: 0,
+                // top: 60,
                 width: 60,
                 height: 60,
                 backgroundColor: "#FF3B30",
@@ -479,7 +490,7 @@ export default function ScheduleScreen() {
             style={{
               position: "absolute",
               right: 0,
-              top: 0,
+              // top: 60,
               width: 60,
               height: 60,
               borderRadius: 24,

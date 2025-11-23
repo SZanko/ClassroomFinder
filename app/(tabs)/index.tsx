@@ -42,7 +42,7 @@ export default function MapScreen() {
         style={{
           position: "absolute",
           right: 20,
-          bottom: 141,
+          bottom: 130,
           width: 60,
           height: 60,
           borderRadius: 24,
