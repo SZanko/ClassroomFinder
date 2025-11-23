@@ -189,9 +189,6 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
                 </View>
               </View>
             </View>
-
-            {/* Day/Time removed per request */}
-
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                 <Text style={styles.label}>Building</Text>
