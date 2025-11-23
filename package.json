@@ -8,6 +8,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "build:app": "npx eas-cli build --profile development --platform android",
+    "build:app:local": "npx eas-cli build --profile development --platform android",
     "build:rooms": "node scripts/build-rooms.mjs",
     "build:routing": "node ./scripts/build-indoor-graph-new.mjs",
     "test": "jest --watchAll",

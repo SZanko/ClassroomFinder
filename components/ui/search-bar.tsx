@@ -254,7 +254,7 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
               !selectedBuilding && styles.disabledSelector,
             ]}
             onPress={() => openModal("ROOM")}
-            activeOpacity={!selectedBuilding ? 1 : 0.2}
+            activeOpacity={selectedBuilding ? 0.2 : 1}
           >
             <Text
               style={
@@ -316,6 +316,7 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
         }
         onClose={() => setModalVisible(false)}
         onSelect={handleSelect}
+        searchable={modalType === "ROOM"}
       />
     </View>
   );

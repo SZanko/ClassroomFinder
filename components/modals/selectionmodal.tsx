@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
   Modal,
   View,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -16,6 +17,7 @@ interface SelectionModalProps {
   selectedItem: string | null;
   onClose: () => void;
   onSelect: (item: string) => void;
+  searchable?: boolean;
 }
 
 export const SelectionModal: React.FC<SelectionModalProps> = ({
@@ -25,7 +27,15 @@ export const SelectionModal: React.FC<SelectionModalProps> = ({
   selectedItem,
   onClose,
   onSelect,
+  searchable,
 }) => {
+  const [query, setQuery] = useState("");
+  const filteredData = useMemo(() => {
+    if (!searchable || query.trim() === "") return data;
+    const q = query.toLowerCase();
+    return data.filter((item) => item.toLowerCase().includes(q));
+  }, [data, query, searchable]);
+
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
       <TouchableOpacity
@@ -35,11 +45,21 @@ export const SelectionModal: React.FC<SelectionModalProps> = ({
       >
         <View style={styles.modalContent}>
           <Text style={styles.modalHeader}>{title}</Text>
+
+          {searchable && (
+            <TextInput
+              style={styles.searchInput}
+              value={query}
+              onChangeText={setQuery}
+              placeholder={`Search ${title.toLowerCase()}...`}
+            />
+          )}
+
           {data.length === 0 ? (
             <Text style={styles.emptyText}>No options available</Text>
           ) : (
             <FlatList
-              data={data}
+              data={filteredData}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
@@ -85,6 +105,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 15,
     textAlign: "center",
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 16,
+    marginBottom: 10,
   },
   modalItem: {
     flexDirection: "row",
