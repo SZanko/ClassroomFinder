@@ -154,9 +154,13 @@ export function NavigationMap({
 
     const firstSeg = route[0];
     const firstPoint = firstSeg.line[0];
-    if (firstPoint) {
+
+    const lastSeg = route.at(-1);
+    const lastPoint = lastSeg?.line.at(-1);
+
+    if (lastPoint) {
       cameraRef.current.setCamera({
-        centerCoordinate: firstPoint,
+        centerCoordinate: lastPoint,
         zoomLevel: 18,
         animationDuration: 800,
       });
