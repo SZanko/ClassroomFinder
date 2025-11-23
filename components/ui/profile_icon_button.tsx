@@ -1,6 +1,6 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface ProfileIconProps {
   onPress?: () => void;
@@ -11,11 +11,15 @@ interface ProfileIconProps {
 export const ProfileIcon: React.FC<ProfileIconProps> = ({
   onPress,
   size = 40,
-  color = "#333"
+  color = "#333",
 }) => {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={styles.container}>
-       <Ionicons name="person-circle-outline" size={size} color={color} />
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={styles.container}
+    >
+      <Ionicons name="person-circle-outline" size={size} color={color} />
     </TouchableOpacity>
   );
 };
@@ -23,7 +27,7 @@ export const ProfileIcon: React.FC<ProfileIconProps> = ({
 const styles = StyleSheet.create({
   container: {
     // Optional: Add padding or background if needed later
-    justifyContent: 'center',
-    alignItems: 'center',
-  }
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

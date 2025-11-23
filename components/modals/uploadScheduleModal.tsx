@@ -25,15 +25,18 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
   // Function to render content inside a grid cell
   const renderCellContent = (day: string, hourIndex: number) => {
     const entry = SAMPLE_SCHEDULE.find(
-      (e) => e.day === day && e.hourIndex === hourIndex
+      (e) => e.day === day && hourIndex >= e.start && hourIndex < e.end
     );
     if (!entry) return null;
-
+    const isFirstHour = hourIndex === entry.start;
     return (
-      <View style={styles.entryContent}>
-        <Text style={styles.entryText}>{entry.subject}{entry.type}</Text>
-        <Text style={styles.entryType}>({entry.type.toUpperCase()})</Text>
-        <Text style={styles.entrySubText}>{entry.building}/{entry.room}</Text>
+      <View style={[styles.entryContent, !isFirstHour && { opacity: 0.5 }]}> 
+        {isFirstHour && (
+          <Text style={styles.entryText} numberOfLines={1}>
+            {entry.subject}
+          </Text>
+        )}
+        <Text style={styles.entryType}>({entry.type}) {entry.building}/{entry.room}</Text>
       </View>
     );
   };

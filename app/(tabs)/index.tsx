@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
   searchContainer: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
+    position: "absolute",
+    top: Platform.OS === "ios" ? 60 : 40,
     left: 20,
     right: 80, 
     zIndex: 10,
