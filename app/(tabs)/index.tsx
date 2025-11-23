@@ -26,8 +26,16 @@ const floatingButtonStyle = {
   zIndex: 20,
 };
 
+const startStopButtonStyle = {
+  position: "absolute" as const,
+  bottom: 20,
+  left: 20,
+  zIndex: 20,
+};
+
 export default function MapScreen() {
   const [route, setRoute] = useState<AnySegment[] | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const [externalSearch, setExternalSearch] = useState<{
     building: string;
@@ -171,7 +179,11 @@ export default function MapScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <NavigationMap route={route} />
+        <NavigationMap
+          route={route}
+          userLocation={userLocation}
+          followUser={isNavigating}
+        />
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
@@ -185,6 +197,23 @@ export default function MapScreen() {
         <View style={styles.profileContainer}>
           <ProfileIcon onPress={handleProfilePress} />
         </View>
+
+        {route && route.length > 0 && (
+          <TouchableOpacity
+            style={[
+              toggleButtonStyle.toggleButton,
+              startStopButtonStyle,
+              //{ bottom: 100 }, // move it up a bit so it doesn't overlap your calendar button
+            ]}
+            onPress={() => setIsNavigating((prev) => !prev)}
+          >
+            {isNavigating ? (
+              <FontAwesome name="stop" size={28} color="#fff" />
+            ) : (
+              <FontAwesome name="play" size={28} color="#fff" />
+            )}
+          </TouchableOpacity>
+        )}
 
         {/* Schedule Button */}
         <TouchableOpacity

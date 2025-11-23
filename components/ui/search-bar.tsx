@@ -101,8 +101,8 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
 
-  const [searchMode, setSearchMode] = useState<"Location" | "Name">("Location");
-  const [nameQuery, setNameQuery] = useState("");
+  //const [searchMode, setSearchMode] = useState<"Location" | "Name">("Location");
+  //const [nameQuery, setNameQuery] = useState("");
   const [lastSearchText, setLastSearchText] = useState("Find a classroom...");
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -118,7 +118,7 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
     if (externalSearch) {
       setSelectedBuilding(externalSearch.building);
       setSelectedRoom(externalSearch.room);
-      setSearchMode("Location");
+      //setSearchMode("Location");
       setLastSearchText(`${externalSearch.building} - ${externalSearch.room}`);
     }
   }, [externalSearch]);
@@ -145,24 +145,34 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
   const handleSearchPress = () => {
     let searchText = "";
 
-    if (searchMode === "Location") {
-      if (!selectedBuilding) return;
-      onSearch({
-        type: "location",
-        building: selectedBuilding,
-        room: selectedRoom,
-      });
-      searchText = selectedRoom
-        ? `${selectedBuilding} - ${selectedRoom}`
-        : selectedBuilding || "";
-      setNameQuery("");
-    } else {
-      if (nameQuery.trim() === "") return;
-      onSearch({ type: "name", query: nameQuery });
-      searchText = nameQuery;
-      setSelectedBuilding(null);
-      setSelectedRoom(null);
-    }
+    //if (searchMode === "Location") {
+    //  if (!selectedBuilding) return;
+    //  onSearch({
+    //    type: "location",
+    //    building: selectedBuilding,
+    //    room: selectedRoom,
+    //  });
+    //  searchText = selectedRoom
+    //    ? `${selectedBuilding} - ${selectedRoom}`
+    //    : selectedBuilding || "";
+    //  setNameQuery("");
+    //} else {
+    //  if (nameQuery.trim() === "") return;
+    //  onSearch({ type: "name", query: nameQuery });
+    //  searchText = nameQuery;
+    //  setSelectedBuilding(null);
+    //  setSelectedRoom(null);
+    //}
+
+    onSearch({
+      type: "location",
+      building: selectedBuilding,
+      room: selectedRoom,
+    });
+
+    searchText = selectedRoom
+      ? `${selectedBuilding} - ${selectedRoom}`
+      : selectedBuilding || "";
 
     setLastSearchText(searchText);
     setExpanded(false);
@@ -193,7 +203,7 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
     <View style={styles.expandedContainer}>
       <Text style={styles.headerText}>Find Classroom</Text>
 
-      {/* --- Segmented Control --- */}
+      {/* --- Segmented Control ---
       <View style={styles.scopeContainer}>
         <TouchableOpacity
           style={[
@@ -228,8 +238,9 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
           </Text>
         </TouchableOpacity>
       </View>
+      */}
 
-      {/* --- Conditional Inputs --- */}
+      {/* --- Conditional Inputs ---
       {searchMode === "Location" ? (
         <>
           <Text style={styles.label}>Building:</Text>
@@ -280,6 +291,37 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
           />
         </>
       )}
+      */}
+
+      <Text style={styles.label}>Building:</Text>
+      <TouchableOpacity
+        style={styles.selector}
+        onPress={() => openModal("BUILDING")}
+      >
+        <Text
+          style={
+            selectedBuilding ? styles.selectorText : styles.placeholderText
+          }
+        >
+          {selectedBuilding || "Select Building"}
+        </Text>
+        <Ionicons name="chevron-down" size={20} color="#666" />
+      </TouchableOpacity>
+
+      <Text style={styles.label}>Room:</Text>
+      <TouchableOpacity
+        style={[styles.selector, !selectedBuilding && styles.disabledSelector]}
+        onPress={() => openModal("ROOM")}
+        activeOpacity={!selectedBuilding ? 1 : 0.2}
+      >
+        <Text
+          style={selectedRoom ? styles.selectorText : styles.placeholderText}
+        >
+          {selectedRoom ||
+            (selectedBuilding ? "Select Room" : "Select Building First")}
+        </Text>
+        <Ionicons name="chevron-down" size={20} color="#666" />
+      </TouchableOpacity>
 
       {/* --- Action Buttons --- */}
       <View style={styles.buttonRow}>
@@ -293,13 +335,15 @@ export const SearchWidget: React.FC<SearchWidgetProps> = ({
           onPress={handleSearchPress}
           style={[
             styles.searchButton,
-            searchMode === "Location" && !selectedBuilding && { opacity: 0.5 },
-            searchMode === "Name" &&
-              nameQuery.trim() === "" && { opacity: 0.5 },
+            !selectedBuilding && { opacity: 0.5 },
+            //searchMode === "Location" && !selectedBuilding && { opacity: 0.5 },
+            //searchMode === "Name" &&
+            //  nameQuery.trim() === "" && { opacity: 0.5 },
           ]}
           disabled={
-            (searchMode === "Location" && !selectedBuilding) ||
-            (searchMode === "Name" && nameQuery.trim() === "")
+            !selectedBuilding
+            //(searchMode === "Location" && !selectedBuilding) ||
+            //(searchMode === "Name" && nameQuery.trim() === "")
           }
         >
           <Text style={styles.searchButtonText}>Search</Text>

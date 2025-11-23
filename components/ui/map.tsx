@@ -20,6 +20,7 @@ import * as Location from "expo-location";
 import polygons from "@/assets/data/rooms_polygons.json";
 import centers from "@/assets/data/rooms_centers.json";
 import { AnySegment } from "@/services/routing/types";
+import { GeoPoint } from "@/hooks/use-current-location";
 
 const { MAPTILER_API_KEY } = Constants.expoConfig?.extra ?? {};
 
@@ -91,9 +92,15 @@ const query = `[out:json][timeout:25];
 
 type NavigationMapProps = {
   route?: AnySegment[] | null;
+  userLocation?: GeoPoint | null;
+  followUser?: boolean;
 };
 
-export function NavigationMap({ route }: Readonly<NavigationMapProps>) {
+export function NavigationMap({
+  route,
+  userLocation,
+  followUser,
+}: Readonly<NavigationMapProps>) {
   const cameraRef = useRef<CameraRef | null>(null);
   const mapRef = useRef<MapViewRef | null>(null);
   const [location, setLocation] = useState<{
