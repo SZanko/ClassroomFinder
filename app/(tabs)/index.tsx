@@ -37,7 +37,7 @@ export default function MapScreen() {
         <SearchWidget onSearch={handleCompoundSearch} />
       </View>
 
-      {/* Navigation button (mirrors schedule2 position and size) */}
+      {/* Navigation button (mirrors schedule position and size) */}
       <TouchableOpacity
         style={{
           position: "absolute",
@@ -52,7 +52,7 @@ export default function MapScreen() {
           alignItems: "center",
           justifyContent: "center",
         }}
-        onPress={() => router.push("/schedule2")}
+        onPress={() => router.push("/schedule")}
         accessibilityLabel="Go to schedule"
       >
         <FontAwesome name="calendar" size={22} color="#fff" />
