@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SelectionModal } from '@/components/modals/selectionmodal';
-type RoomEntry = { ref?: string; name?: string; center: [number, number] };
-type RoomsIndex = Record<string, RoomEntry[]>;
 
 import roomsIndexRaw from '@/assets/data/rooms_index.json';
+type RoomEntry = { ref?: string; name?: string; center: [number, number] };
+type RoomsIndex = Record<string, RoomEntry[]>;
 
 const roomsIndex = roomsIndexRaw as unknown as RoomsIndex;
 
