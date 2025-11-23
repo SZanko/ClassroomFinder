@@ -189,7 +189,6 @@ export default function ScheduleScreen() {
             <Ionicons name="person-circle-outline" size={40} color="#007AFF" />
           </TouchableOpacity>
         </View>
-        {/* Schedule Content */}
         <View
           onLayout={onGridLayout}
           onStartShouldSetResponder={() => true}
