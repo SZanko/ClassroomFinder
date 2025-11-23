@@ -36,13 +36,13 @@ type GridBlock = {
 export default function ScheduleScreen() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
-  const [isSelecting, setIsSelecting] = useState(false);
+  
 
   const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
   const [basicModalVisible, setBasicModalVisible] = useState(false);
   const [timeModalVisible, setTimeModalVisible] = useState(false);
   const [blocks, setBlocks] = useState<GridBlock[]>([]);
-  const [clickedExistingBlock, setClickedExistingBlock] = useState(false);
+
   const [entryModalVisible, setEntryModalVisible] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<ScheduleEntry | null>(null);
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
@@ -108,22 +108,11 @@ export default function ScheduleScreen() {
     return { row, col } as const;
   };
 
-  const addCell = (row: number, col: number) => {
-    setSelectedCells((prev) => {
-      const key = getKey(row, col);
-      // Prevent selecting a cell that already belongs to an existing block
-      if (prev.has(key)) return prev;
-      if (getBlockAt(row, col)) return prev; 
-      const next = new Set(prev);
-      next.add(key);
-      return next;
-    });
-  };
 
   // Tap to toggle selection for multiple slots; confirm with checkmark button
   const toggleCellSelection = (row: number, col: number) => {
     if (row === 0 || col === 0) return;
-    if (getBlockAt(row, col)) return; // ignore cells occupied by existing blocks
+    if (getBlockAt(row, col)) return;
     const key = getKey(row, col);
     setSelectedCells((prev) => {
       const next = new Set(prev);
@@ -136,34 +125,10 @@ export default function ScheduleScreen() {
     });
   };
 
-  const handleGridGrant = (e: any) => {
-    const { locationX, locationY } = e.nativeEvent;
-    const cell = pointToCell(locationX, locationY);
-    if (!cell) return;
-    setIsSelecting(true);
-    addCell(cell.row, cell.col);
-  };
-  const handleGridMove = (e: any) => {
-    if (!isSelecting) return;
-    const { locationX, locationY } = e.nativeEvent;
-    const cell = pointToCell(locationX, locationY);
-    if (cell) addCell(cell.row, cell.col);
-  };
-  const handleGridRelease = () => {
-    setIsSelecting(false);
-    if (clickedExistingBlock) {
-      setClickedExistingBlock(false);
-      return;
-    }
-    if (selectedCells.size > 0) setBasicModalVisible(true);
-  };
   const onGridLayout = (e: any) => {
     const { width, height } = e.nativeEvent.layout || {};
     if (width && height) setGridSize({ width, height });
   };
-
-
-
 
   const getColorsForBlock = (b: GridBlock) => {
     if (b.type === "T") return { bg: "#0A3069", fg: "#fff" }; // theoretical
@@ -211,7 +176,6 @@ export default function ScheduleScreen() {
           onStartShouldSetResponder={() => false}
           onMoveShouldSetResponder={() => false}
           style={{
-           
             height: GRID_HEIGHT,
             // flex:1,
             marginTop: 16,
@@ -481,6 +445,7 @@ export default function ScheduleScreen() {
               <Ionicons name="trash-outline" size={24} color="#fff" />
             </TouchableOpacity>
           )}
+          {/* Add Class after selecting */}
           {selectedCells.size > 0 && (
           <TouchableOpacity
               onPress={() => setBasicModalVisible(true)}

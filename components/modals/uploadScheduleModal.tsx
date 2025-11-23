@@ -5,8 +5,8 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions
 import { Ionicons } from '@expo/vector-icons';
 import { ScheduleEntry, HOURS_MAP, DAYS, SAMPLE_SCHEDULE } from '@/assets/data/sample-schedule';
 
-const { width, height: screenHeight } = Dimensions.get('window');
-// Base sizes scaled to 50%
+const { height: screenHeight } = Dimensions.get('window');
+
 const BASE_TIME_COL_WIDTH = 72;
 const BASE_DAY_COL_WIDTH = 110;
 const BASE_CELL_HEIGHT = 44;

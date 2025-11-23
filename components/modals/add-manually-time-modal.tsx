@@ -14,8 +14,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ScheduleEntry, DAYS, HOURS_MAP } from "@/assets/data/sample-schedule";
 
-// Full manual modal: includes day + start/end (hour indices) besides subject/type/building/room.
-
 const SUBJECTS = ["IPM", "ML", "SBD", "MSP", "IIO", "ASPI"];
 const BUILDINGS = ["VII", "II"];
 const ROOMS_BY_BUILDING: Record<string, string[]> = {
@@ -27,7 +25,7 @@ interface AddManualTimeModalProps {
 	visible: boolean;
 	onClose: () => void;
 	onAdd: (entry: ScheduleEntry) => void;
-	currentSchedule: ScheduleEntry[]; // for future conflict checking
+	currentSchedule: ScheduleEntry[]; 
 }
 
 export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
@@ -37,7 +35,7 @@ export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
 	currentSchedule,
 }) => {
 	const [subject, setSubject] = useState("");
-	// Restrict type selection to T | P for compatibility.
+
 	const [type, setType] = useState<"T" | "P">("T");
 	const [building, setBuilding] = useState("");
 	const [room, setRoom] = useState("");
@@ -103,7 +101,7 @@ export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
 				break;
 			case "START":
 				setStartLabel(item);
-				// If previously chosen end is before new start, clear it
+				
 				if (endLabel && HOURS_MAP[endLabel] < HOURS_MAP[item]) setEndLabel("");
 				break;
 			case "END":
@@ -127,7 +125,7 @@ export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
 				return hourLabels;
 			case "END":
 				if (!startLabel) return hourLabels;
-				// Allow selecting the same slot for a 1-hour class (inclusive end)
+			
 				return hourLabels.filter((l) => HOURS_MAP[l] >= HOURS_MAP[startLabel]);
 			default:
 				return [];
@@ -496,7 +494,7 @@ const styles = StyleSheet.create({
 	selectionItemText: {
 		fontSize: 16,
 	},
-	// Added type selector styles copied from basic manual modal
+
 	typeSelector: {
 		flexDirection: "row",
 		borderWidth: 1,
