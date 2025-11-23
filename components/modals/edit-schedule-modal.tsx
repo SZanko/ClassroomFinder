@@ -35,7 +35,6 @@ export const EditScheduleModal2: React.FC<EditScheduleModal2Props> = ({
   onSave,
   currentSchedule,
 }) => {
-
   const [subject, setSubject] = useState("");
   const [type, setType] = useState<"T" | "P">("T");
   const [building, setBuilding] = useState("");
@@ -46,26 +45,22 @@ export const EditScheduleModal2: React.FC<EditScheduleModal2Props> = ({
 
   const [selectionVisible, setSelectionVisible] = useState(false);
   const [selectionType, setSelectionType] = useState<
-    | "SUBJECT"
-    | "BUILDING"
-    | "ROOM"
-    | "DAY"
-    | "START"
-    | "END"
+    "SUBJECT" | "BUILDING" | "ROOM" | "DAY" | "START" | "END"
   >("SUBJECT");
 
- 
   const hourLabels = useMemo(
-    () => Object.entries(HOURS_MAP).sort((a, b) => a[1] - b[1]).map(([l]) => l),
-    []
+    () =>
+      Object.entries(HOURS_MAP)
+        .sort((a, b) => a[1] - b[1])
+        .map(([l]) => l),
+    [],
   );
 
   const availableRooms = useMemo(
     () => (building ? ROOMS_BY_BUILDING[building] || [] : []),
-    [building]
+    [building],
   );
 
- 
   useEffect(() => {
     if (visible && entry) {
       setSubject(entry.subject);
@@ -75,7 +70,8 @@ export const EditScheduleModal2: React.FC<EditScheduleModal2Props> = ({
       setDay(entry.day);
       const startL = hourLabels.find((l) => HOURS_MAP[l] === entry.start) || "";
       const endInclusiveIdx = entry.end - 1;
-      const endL = hourLabels.find((l) => HOURS_MAP[l] === endInclusiveIdx) || "";
+      const endL =
+        hourLabels.find((l) => HOURS_MAP[l] === endInclusiveIdx) || "";
       setStartLabel(startL);
       setEndLabel(endL);
     }
@@ -85,13 +81,12 @@ export const EditScheduleModal2: React.FC<EditScheduleModal2Props> = ({
   }, [visible, entry, hourLabels]);
 
   const openSelection = (
-    type: "SUBJECT" | "BUILDING" | "ROOM" | "DAY" | "START" | "END"
+    type: "SUBJECT" | "BUILDING" | "ROOM" | "DAY" | "START" | "END",
   ) => {
     if (type === "ROOM" && !building) {
       return;
     }
     if ((type === "START" || type === "END") && hourLabels.length === 0) {
-    
       return;
     }
     setSelectionType(type);
@@ -155,18 +150,16 @@ export const EditScheduleModal2: React.FC<EditScheduleModal2Props> = ({
   const handleSave = () => {
     if (!entry) return;
     if (!subject || !building || !room || !day || !startLabel || !endLabel) {
- 
       return;
     }
     const startIdx = HOURS_MAP[startLabel];
     const endIdx = HOURS_MAP[endLabel];
     if (endIdx < startIdx) {
-     
       return;
     }
-    const exclusiveEnd = endIdx + 1; 
+    const exclusiveEnd = endIdx + 1;
     const updated: ScheduleEntry = {
-      id: entry.id, 
+      id: entry.id,
       subject,
       type,
       building,
@@ -176,7 +169,6 @@ export const EditScheduleModal2: React.FC<EditScheduleModal2Props> = ({
       end: exclusiveEnd,
     };
     if (hasConflict(updated)) {
-     
       return;
     }
     onSave(updated);
@@ -216,16 +208,36 @@ export const EditScheduleModal2: React.FC<EditScheduleModal2Props> = ({
                 <Text style={styles.label}>Type</Text>
                 <View style={styles.typeSelector}>
                   <TouchableOpacity
-                    style={[styles.typeButton, type === "T" && styles.typeButtonTSelected]}
+                    style={[
+                      styles.typeButton,
+                      type === "T" && styles.typeButtonTSelected,
+                    ]}
                     onPress={() => setType("T")}
                   >
-                    <Text style={[styles.typeText, type === "T" && styles.typeTextSelectedT]}>T</Text>
+                    <Text
+                      style={[
+                        styles.typeText,
+                        type === "T" && styles.typeTextSelectedT,
+                      ]}
+                    >
+                      T
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.typeButton, type === "P" && styles.typeButtonPSelected]}
+                    style={[
+                      styles.typeButton,
+                      type === "P" && styles.typeButtonPSelected,
+                    ]}
                     onPress={() => setType("P")}
                   >
-                    <Text style={[styles.typeText, type === "P" && styles.typeTextSelectedP]}>P</Text>
+                    <Text
+                      style={[
+                        styles.typeText,
+                        type === "P" && styles.typeTextSelectedP,
+                      ]}
+                    >
+                      P
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -299,7 +311,8 @@ export const EditScheduleModal2: React.FC<EditScheduleModal2Props> = ({
         >
           <View style={styles.selectionModalContent}>
             <Text style={styles.selectionModalTitle}>
-              Select {selectionType.charAt(0) + selectionType.slice(1).toLowerCase()}
+              Select{" "}
+              {selectionType.charAt(0) + selectionType.slice(1).toLowerCase()}
             </Text>
             <FlatList
               data={getSelectionData()}
@@ -351,7 +364,11 @@ const DropdownField = ({
     <Text style={[styles.dropdownText, !value && styles.placeholderText]}>
       {value || placeholder}
     </Text>
-    <Ionicons name="chevron-down" size={20} color={disabled ? "#999" : "#666"} />
+    <Ionicons
+      name="chevron-down"
+      size={20}
+      color={disabled ? "#999" : "#666"}
+    />
   </TouchableOpacity>
 );
 

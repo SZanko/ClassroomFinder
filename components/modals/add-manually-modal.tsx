@@ -24,7 +24,7 @@ interface AddManualScheduleModalProps {
   visible: boolean;
   onClose: () => void;
   onAdd: (entry: BasicManualEntry) => void;
-  currentSchedule: ScheduleEntry[]; 
+  currentSchedule: ScheduleEntry[];
 }
 
 export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
@@ -39,11 +39,11 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<"SUBJECT" | "BUILDING" | "ROOM">(
-    "SUBJECT"
+    "SUBJECT",
   );
   const availableRooms = useMemo(
     () => (building ? ROOMS_BY_BUILDING[building] || [] : []),
-    [building]
+    [building],
   );
 
   const openModal = (type: "SUBJECT" | "BUILDING" | "ROOM") => {
@@ -94,7 +94,6 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
       setModalVisible(false); // ensure any selection sub-modal also closes
     }
   }, [visible]);
-
 
   //TODO: Add conflict checking here if needed
   const handleSubmit = () => {

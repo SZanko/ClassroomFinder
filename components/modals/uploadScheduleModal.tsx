@@ -1,11 +1,24 @@
 // components/ui/UploadScheduleModal.tsx
 
-import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { ScheduleEntry, HOURS_MAP, DAYS, SAMPLE_SCHEDULE } from '@/assets/data/sample-schedule';
+import React from "react";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  ScheduleEntry,
+  HOURS_MAP,
+  DAYS,
+  SAMPLE_SCHEDULE,
+} from "@/assets/data/sample-schedule";
 
-const { height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get("window");
 
 const BASE_TIME_COL_WIDTH = 72;
 const BASE_DAY_COL_WIDTH = 110;
@@ -32,24 +45,31 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
   // Function to render content inside a grid cell
   const renderCellContent = (day: string, hourIndex: number) => {
     const entry = SAMPLE_SCHEDULE.find(
-      (e) => e.day === day && hourIndex >= e.start && hourIndex < e.end
+      (e) => e.day === day && hourIndex >= e.start && hourIndex < e.end,
     );
     if (!entry) return null;
     const isFirstHour = hourIndex === entry.start;
     return (
-      <View style={[styles.entryContent, !isFirstHour && { opacity: 0.5 }]}> 
+      <View style={[styles.entryContent, !isFirstHour && { opacity: 0.5 }]}>
         {isFirstHour && (
           <Text style={styles.entryText} numberOfLines={1}>
             {entry.subject}
           </Text>
         )}
-        <Text style={styles.entryType}>({entry.type}) {entry.building}/{entry.room}</Text>
+        <Text style={styles.entryType}>
+          ({entry.type}) {entry.building}/{entry.room}
+        </Text>
       </View>
     );
   };
 
   return (
-    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
@@ -59,17 +79,40 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.previewDescription}>This is a sample schedule. Tap Upload to use it.</Text>
+          <Text style={styles.previewDescription}>
+            This is a sample schedule. Tap Upload to use it.
+          </Text>
 
           <View style={styles.gridContainer}>
-            <ScrollView showsVerticalScrollIndicator={true} contentContainerStyle={{ flexGrow: 1 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
               <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-                <View style={[styles.grid, { width: TIME_COL_WIDTH + DAY_COL_WIDTH * DAYS.length }] }>
+                <View
+                  style={[
+                    styles.grid,
+                    { width: TIME_COL_WIDTH + DAY_COL_WIDTH * DAYS.length },
+                  ]}
+                >
                   {/* Header Row (Days) */}
                   <View style={[styles.row, { height: CELL_HEIGHT }]}>
-                    <View style={[styles.cell, styles.headerCell, { width: TIME_COL_WIDTH, alignItems: 'center' }]} />
+                    <View
+                      style={[
+                        styles.cell,
+                        styles.headerCell,
+                        { width: TIME_COL_WIDTH, alignItems: "center" },
+                      ]}
+                    />
                     {DAYS.map((day) => (
-                      <View key={day} style={[styles.cell, styles.headerCell, { width: DAY_COL_WIDTH }]}>
+                      <View
+                        key={day}
+                        style={[
+                          styles.cell,
+                          styles.headerCell,
+                          { width: DAY_COL_WIDTH },
+                        ]}
+                      >
                         <Text style={styles.headerText}>{day}</Text>
                       </View>
                     ))}
@@ -79,12 +122,28 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
                   {Object.keys(HOURS_MAP).map((hourString) => {
                     const hourIndex = HOURS_MAP[hourString];
                     return (
-                      <View key={hourString} style={[styles.row, { height: CELL_HEIGHT }]}>
-                        <View style={[styles.cell, { width: TIME_COL_WIDTH, alignItems: 'flex-start', backgroundColor: '#f0f0f0', paddingLeft: 5 }]}>
+                      <View
+                        key={hourString}
+                        style={[styles.row, { height: CELL_HEIGHT }]}
+                      >
+                        <View
+                          style={[
+                            styles.cell,
+                            {
+                              width: TIME_COL_WIDTH,
+                              alignItems: "flex-start",
+                              backgroundColor: "#f0f0f0",
+                              paddingLeft: 5,
+                            },
+                          ]}
+                        >
                           <Text style={styles.timeText}>{hourString}</Text>
                         </View>
                         {DAYS.map((day) => (
-                          <View key={`${day}-${hourString}`} style={[styles.cell, { width: DAY_COL_WIDTH }]}>
+                          <View
+                            key={`${day}-${hourString}`}
+                            style={[styles.cell, { width: DAY_COL_WIDTH }]}
+                          >
                             {renderCellContent(day, hourIndex)}
                           </View>
                         ))}
@@ -96,7 +155,10 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
             </ScrollView>
           </View>
 
-          <TouchableOpacity style={styles.uploadButton} onPress={() => onUpload(SAMPLE_SCHEDULE)}>
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={() => onUpload(SAMPLE_SCHEDULE)}
+          >
             <Text style={styles.uploadButtonText}>Upload This Schedule</Text>
           </TouchableOpacity>
         </View>
@@ -108,99 +170,99 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 15,
     padding: 20,
-    width: '90%',
-    maxHeight: '85%',
-    alignItems: 'stretch',
+    width: "90%",
+    maxHeight: "85%",
+    alignItems: "stretch",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
     marginBottom: 10,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   previewDescription: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginBottom: 15,
   },
   gridContainer: {
-    width: '100%',
+    width: "100%",
     height: Math.min(Math.max(screenHeight * 0.45, 280), 480),
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
+    overflow: "hidden",
+    backgroundColor: "#fff",
   },
   grid: {},
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   cell: {
     borderRightWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#ccc",
+    justifyContent: "center",
+    alignItems: "center",
   },
   timeCell: {},
   headerCell: {
-    backgroundColor: '#e0e0e0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#e0e0e0",
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerText: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 12,
-    color: '#333',
+    color: "#333",
   },
   timeText: {
     fontSize: 10,
-    color: '#666',
+    color: "#666",
   },
   entryContent: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   entryText: {
     fontSize: 10,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
   },
   entryType: {
-      fontSize: 8,
-      textAlign: 'center',
-      color: '#555',
+    fontSize: 8,
+    textAlign: "center",
+    color: "#555",
   },
   entrySubText: {
     fontSize: 8,
-    color: '#555',
-    textAlign: 'center',
+    color: "#555",
+    textAlign: "center",
   },
   uploadButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 10,
   },
   uploadButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
