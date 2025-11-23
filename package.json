@@ -10,16 +10,16 @@
     "lint": "expo lint",
     "build:rooms": "node scripts/build-rooms.mjs",
     "build:routing": "node ./scripts/build-indoor-graph-new.mjs",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "doctor": "npx expo-doctor"
   },
   "dependencies": {
-    "@expo/metro-config": "^54.0.9",
     "@expo/vector-icons": "^15.0.3",
     "@maplibre/maplibre-react-native": "^10.4.0",
-    "@react-native-async-storage/async-storage": "^1.24.0",
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
-    "@react-navigation/native": "^7.1.19",
+    "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.23",
     "expo-constants": "~18.0.10",
     "expo-dev-client": "~6.0.18",
