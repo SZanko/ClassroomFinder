@@ -70,56 +70,103 @@ export default function MapScreen() {
   };
 
   const handleCompoundSearch = async (criteria: SearchCriteria) => {
+    if (criteria.type === "location") {
+      console.log("Searching by LOCATION:", criteria.building, criteria.room);
+    } else {
+      console.log("Searching by NAME:", criteria.query);
+    }
+
     try {
+      // This part depends on how your RouterCoordinator is defined.
+      // Typical pattern: coordinator.route(from, to) => AnySegment[]
+      // Assume LngLat is [number, number]:
       const from: [number, number] = [
         startingPoint.longitude,
         startingPoint.latitude,
       ];
-      let toId: string = "";
 
-      if (criteria.type === "location") {
-        console.log(
-          "Searching for Location:",
+      // However you encode your indoor target (this is just an example)
+      let toId;
+      if (
+        criteria.type === "location" &&
+        criteria.building !== null &&
+        criteria.room !== null
+      ) {
+        const segments: AnySegment[] = await coordinator.routeGpsToBuildingRoom(
+          from,
           criteria.building,
           criteria.room,
         );
-        toId = criteria.room || "";
-      } else {
-        console.log("Searching for Name:", criteria.query);
-        toId = criteria.query || "";
-      }
-
-      if (!toId) {
-        Alert.alert("Error", "Invalid destination target.");
-        return;
-      }
-
-      console.log("ID sent to graph:", toId);
-
-      const segments: AnySegment[] = await coordinator.routeGpsToRoom(
-        from,
-        toId,
-      );
-
-      if (segments && segments.length > 0) {
-        console.log("Route found!");
         setRoute(segments);
+        //const segments: AnySegment[] = await coordinator.routeBuildingToRoom(
+        //    'Building VIII',
+        //    criteria.building,
+        //    criteria.room);
+        //setRoute(segments);
       } else {
-        console.warn("Route not found (empty result).");
-        Alert.alert(
-          "Route not found",
-          `Could not find a path to room '${toId}'.`,
+        const sequements = await coordinator.routeGpsToRoom(
+          from,
+          criteria.type,
         );
+        setRoute(sequements);
       }
     } catch (e) {
-      console.warn("Error computing route:", e);
-      Alert.alert(
-        "Error",
-        "Failed to compute route. Please check if the room exists in the data.",
-      );
+      console.warn("Failed to compute route", e);
       setRoute(null);
     }
   };
+
+  //const handleCompoundSearch = async (criteria: SearchCriteria) => {
+  //  try {
+  //    const from: [number, number] = [
+  //      startingPoint.longitude,
+  //      startingPoint.latitude,
+  //    ];
+  //    let toId: string = "";
+
+  //    if (criteria.type === "location") {
+  //      console.log(
+  //        "Searching for Location:",
+  //        criteria.building,
+  //        criteria.room,
+  //      );
+  //      toId = criteria.room || "";
+  //    } else {
+  //      console.log("Searching for Name:", criteria.query);
+  //      toId = criteria.query || "";
+  //    }
+
+  //    if (!toId) {
+  //      Alert.alert("Error", "Invalid destination target.");
+  //      return;
+  //    }
+
+  //    console.log("ID sent to graph:", toId);
+
+  //    const segments: AnySegment[] = await coordinator.routeGpsToRoom(
+  //      from,
+  //      toId,
+  //    );
+
+  //    if (segments && segments.length > 0) {
+  //      console.log("Route found!");
+  //      setRoute(segments);
+  //    } else {
+  //      console.warn("Route not found (empty result).");
+  //      Alert.alert(
+  //        "Route not found",
+  //        `Could not find a path to room '${toId}'.`,
+  //      );
+  //    }
+  //  } catch (e) {
+  //    console.warn("Error computing route:", e);
+  //    Alert.alert(
+  //      "Error",
+  //      "Failed to compute route. Please check if the room exists in the data.",
+  //    );
+  //    setRoute(null);
+  //  }
+  //};
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
