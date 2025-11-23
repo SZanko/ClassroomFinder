@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { FontAwesome, FontAwesome6, AntDesign } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome6, AntDesign, Fontisto } from "@expo/vector-icons";
 import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
 import { NavigationMap } from "@/components/ui/map";
 import React, { useEffect, useState } from "react";
@@ -219,9 +219,9 @@ export default function MapScreen() {
             onPress={handleToggleNavigation}
           >
             {isNavigating ? (
-              <FontAwesome name="navicon" size={28} color="#fff" />
-            ) : (
               <AntDesign name="close" size={28} color="#fff" />
+            ) : (
+              <Fontisto name="navigate" size={28} color="#fff" />
             )}
           </TouchableOpacity>
         )}
