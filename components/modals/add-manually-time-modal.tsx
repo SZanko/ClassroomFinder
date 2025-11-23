@@ -182,7 +182,7 @@ export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
 			Alert.alert("Invalid Time", "End cannot be before start.");
 			return;
 		}
-		// Treat end label as inclusive; store end as exclusive boundary
+
 		const exclusiveEnd = endIdx + 1;
 		const newEntry: ScheduleEntry = {
 			id: Date.now().toString(),

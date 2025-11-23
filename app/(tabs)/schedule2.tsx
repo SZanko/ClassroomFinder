@@ -7,6 +7,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
 import { DAYS, HOURS_MAP, ScheduleEntry, BasicManualEntry } from "../../assets/data/sample-schedule";
+import { ScheduleEntryModal } from "../../components/modals/schedule-entry-modal";
+import { EditScheduleModal2 } from "../../components/modals/edit-schedule-modal";
 import { AddManualTimeModal } from "../../components/modals/add-manually-time-modal";
 import { AddManualScheduleModal } from "../../components/modals/add-manually-modal";
 
@@ -40,6 +42,10 @@ export default function ScheduleScreen() {
   const [timeModalVisible, setTimeModalVisible] = useState(false);
   const [blocks, setBlocks] = useState<GridBlock[]>([]);
   const [clickedExistingBlock, setClickedExistingBlock] = useState(false);
+  const [entryModalVisible, setEntryModalVisible] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<ScheduleEntry | null>(null);
+  const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
 
   const STORAGE_KEY = "@schedule_blocks";
   const loadSchedule = async () => {
@@ -116,14 +122,6 @@ export default function ScheduleScreen() {
     const { locationX, locationY } = e.nativeEvent;
     const cell = pointToCell(locationX, locationY);
     if (!cell) return;
-    const block = getBlockAt(cell.row, cell.col);
-    if (block) {
-      console.log(`${block.subject} ${block.building} ${block.room}`);
-      setClickedExistingBlock(true);
-      clearSelection();
-      setIsSelecting(false);
-      return;
-    }
     setIsSelecting(true);
     addCell(cell.row, cell.col);
   };
@@ -146,41 +144,7 @@ export default function ScheduleScreen() {
     if (width && height) setGridSize({ width, height });
   };
 
-  const selectionToBlocks = (entry: ScheduleEntry): GridBlock[] => {
-    const perCol = new Map<number, number[]>();
-    selectedCells.forEach((key) => {
-      const [r, c] = key.split("-").map((n) => parseInt(n, 10));
-      if (r === 0 || c === 0) return;
-      const arr = perCol.get(c) ?? [];
-      arr.push(r);
-      perCol.set(c, arr);
-    });
-    const newBlocks: GridBlock[] = [];
-    perCol.forEach((rows, c) => {
-      rows.sort((a, b) => a - b);
-      let start = rows[0];
-      let prev = rows[0];
-      for (let i = 1; i <= rows.length; i++) {
-        const cur = rows[i];
-        if (cur !== prev + 1) {
-          const startHour = start - 1;
-          const duration = prev - start + 1;
-          newBlocks.push({
-            dayIndex: c - 1,
-            start: startHour,
-            duration,
-            subject: entry.subject,
-            building: entry.building,
-            room: entry.room,
-            type: entry.type
-          });
-          start = cur;
-        }
-        prev = cur;
-      }
-    });
-    return newBlocks;
-  };
+
 
   // Color helper: 'T' -> dark blue, 'P' -> light blue (based on type field)
   const getColorsForBlock = (b: GridBlock) => {
@@ -189,6 +153,13 @@ export default function ScheduleScreen() {
     return { bg: "#DDEBFF", fg: "#0A3069" }; // fallback
   };
 
+  const handleNavigate = () => {
+    if (!selectedEntry) return;
+      router.push({
+        pathname: "/",
+        params: { building: selectedEntry.building, room: selectedEntry.room },
+      });
+      };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View
@@ -302,9 +273,9 @@ export default function ScheduleScreen() {
               const heightPct = (b.duration / TOTAL_ROWS) * 100;
               const { bg, fg } = getColorsForBlock(b);
               return (
-                <View
+                <TouchableOpacity
                   key={`block-${i}`}
-                  pointerEvents="none"
+                  activeOpacity={0.7}
                   style={{
                     position: "absolute",
                     left: `${leftPct}%`,
@@ -317,6 +288,21 @@ export default function ScheduleScreen() {
                     justifyContent: "center",
                     alignItems: "center",
                     paddingHorizontal: 4,
+                  }}
+                  onPress={() => {
+                    const entry: ScheduleEntry = {
+                      id: `b-${i}`,
+                      subject: b.subject,
+                      type: b.type === "T" || b.type === "P" ? (b.type as "T" | "P") : "T",
+                      building: b.building,
+                      room: b.room,
+                      day: DAYS[b.dayIndex],
+                      start: b.start,
+                      end: b.start + b.duration,
+                    };
+                    setSelectedEntry(entry);
+                    setSelectedBlockIndex(i);
+                    setEntryModalVisible(true);
                   }}
                 >
                   <Text
@@ -333,7 +319,7 @@ export default function ScheduleScreen() {
                     {b.building} {b.room}
                   </Text>
                   <Text style={{ color: fg, fontSize: 10 }}>{b.type}</Text>
-                </View>
+                </TouchableOpacity>
               );
             })}
         </View>
@@ -608,6 +594,69 @@ export default function ScheduleScreen() {
           start: b.start,
           end: b.start + b.duration,
         }))}
+      />
+
+      {/* Entry detail modal when clicking existing block */}
+      <ScheduleEntryModal
+        visible={entryModalVisible}
+        entry={selectedEntry}
+        onClose={() => {
+          setEntryModalVisible(false);
+          setSelectedEntry(null);
+          setSelectedBlockIndex(null);
+        }}
+        onDelete={() => {
+          if (selectedBlockIndex !== null) {
+            setBlocks((prev) => prev.filter((_, i) => i !== selectedBlockIndex));
+          }
+          setEntryModalVisible(false);
+          setSelectedEntry(null);
+          setSelectedBlockIndex(null);
+        }}
+        onEdit={() => {
+          setEntryModalVisible(false);
+          setEditModalVisible(true);
+        }}
+        onNavigate={() => {
+          handleNavigate();
+          setEntryModalVisible(false);
+        }}
+      />
+      <EditScheduleModal2
+        visible={editModalVisible}
+        entry={selectedEntry}
+        currentSchedule={blocks.map((b, i) => ({
+          id: `b-${i}`,
+          subject: b.subject,
+          type: b.type === "T" || b.type === "P" ? (b.type as "T" | "P") : "T",
+          building: b.building,
+          room: b.room,
+          day: DAYS[b.dayIndex],
+          start: b.start,
+          end: b.start + b.duration,
+        }))}
+        onClose={() => {
+          setEditModalVisible(false);
+        }}
+        onSave={(updated) => {
+          if (selectedBlockIndex !== null) {
+            setBlocks((prev) => prev.map((b, i) => {
+              if (i !== selectedBlockIndex) return b;
+              const dayIndex = DAYS.indexOf(updated.day);
+              return {
+                dayIndex,
+                start: updated.start,
+                duration: updated.end - updated.start,
+                subject: updated.subject,
+                building: updated.building,
+                room: updated.room,
+                type: updated.type,
+              };
+            }));
+          }
+          setSelectedEntry(updated);
+          setEditModalVisible(false);
+        }}
       />
     </SafeAreaView>
   );
