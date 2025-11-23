@@ -134,13 +134,6 @@ export function NavigationMap({
               longitude: pos.coords.longitude,
             };
             setLocation(coords);
-
-            if (cameraRef.current) {
-              cameraRef.current.setCamera({
-                centerCoordinate: [coords.longitude, coords.latitude],
-                animationDuration: 500,
-              });
-            }
           },
         );
 
@@ -151,23 +144,93 @@ export function NavigationMap({
       }
     })();
 
-    if (!route || route.length === 0) return;
+    return () => {
+      if (subscription) subscription.remove();
+    };
+  }, []);
 
-    // Focus camera on the first coordinate of the first segment
+  useEffect(() => {
+    if (!route || route.length === 0 || !cameraRef.current) return;
+
     const firstSeg = route[0];
     const firstPoint = firstSeg.line[0];
-    if (firstPoint && cameraRef.current) {
+    if (firstPoint) {
       cameraRef.current.setCamera({
         centerCoordinate: firstPoint,
         zoomLevel: 18,
         animationDuration: 800,
       });
     }
-
-    return () => {
-      if (subscription) subscription.remove();
-    };
   }, [route]);
+
+  // Follow the user WHEN navigating is active
+  useEffect(() => {
+    if (!followUser || !location || !cameraRef.current) return;
+
+    cameraRef.current.setCamera({
+      centerCoordinate: [location.longitude, location.latitude],
+      animationDuration: 500,
+    });
+  }, [location, followUser]);
+
+  //useEffect(() => {
+  //  let subscription: Location.LocationSubscription | null = null;
+
+  //  (async () => {
+  //    try {
+  //      const { status } = await Location.requestForegroundPermissionsAsync();
+  //      if (status !== "granted") {
+  //        setErrorMsg("Permission to access location was denied.");
+  //        setLoading(false);
+  //        return;
+  //      }
+
+  //      subscription = await Location.watchPositionAsync(
+  //        {
+  //          accuracy: Location.Accuracy.Highest,
+  //          timeInterval: 1000,
+  //          distanceInterval: 1,
+  //        },
+  //        (pos: Location.LocationObject) => {
+  //          const coords = {
+  //            latitude: pos.coords.latitude,
+  //            longitude: pos.coords.longitude,
+  //          };
+  //          setLocation(coords);
+
+  //          if (cameraRef.current) {
+  //            cameraRef.current.setCamera({
+  //              centerCoordinate: [coords.longitude, coords.latitude],
+  //              animationDuration: 500,
+  //            });
+  //          }
+  //        },
+  //      );
+
+  //      setLoading(false);
+  //    } catch (err: any) {
+  //      setErrorMsg(err?.message ?? "Failed to get location");
+  //      setLoading(false);
+  //    }
+  //  })();
+
+  //  if (!route || route.length === 0) return;
+
+  //  // Focus camera on the first coordinate of the first segment
+  //  const firstSeg = route[0];
+  //  const firstPoint = firstSeg.line[0];
+  //  if (firstPoint && cameraRef.current) {
+  //    cameraRef.current.setCamera({
+  //      centerCoordinate: firstPoint,
+  //      zoomLevel: 18,
+  //      animationDuration: 800,
+  //    });
+  //  }
+
+  //  return () => {
+  //    if (subscription) subscription.remove();
+  //  };
+  //}, [route]);
 
   const routeCollection = useMemo(() => {
     if (!route || route.length === 0) return null;

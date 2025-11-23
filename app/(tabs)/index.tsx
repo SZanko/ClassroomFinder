@@ -124,6 +124,17 @@ export default function MapScreen() {
     }
   };
 
+  const handleToggleNavigation = () => {
+    if (isNavigating) {
+      setIsNavigating(false);
+      setRoute(null);
+    } else {
+      if (route && route.length > 0) {
+        setIsNavigating(true);
+      }
+    }
+  };
+
   //const handleCompoundSearch = async (criteria: SearchCriteria) => {
   //  try {
   //    const from: [number, number] = [
@@ -205,7 +216,7 @@ export default function MapScreen() {
               startStopButtonStyle,
               //{ bottom: 100 }, // move it up a bit so it doesn't overlap your calendar button
             ]}
-            onPress={() => setIsNavigating((prev) => !prev)}
+            onPress={handleToggleNavigation}
           >
             {isNavigating ? (
               <FontAwesome name="stop" size={28} color="#fff" />
