@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
 	Modal,
 	View,
@@ -145,7 +145,7 @@ export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
 	};
 
 	// Reset when becoming hidden (parent closed it)
-	React.useEffect(() => {
+	useEffect(() => {
 		if (!visible) {
 			resetForm();
 			setModalVisible(false); // ensure selection modal closed

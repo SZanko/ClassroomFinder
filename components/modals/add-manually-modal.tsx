@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Modal,
   View,
@@ -89,7 +89,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   };
 
   // Reset whenever modal transitions from visible to hidden (parent closed it)
-  React.useEffect(() => {
+  useEffect(() => {
     if (!visible) {
       resetForm();
       setModalVisible(false); // ensure any selection sub-modal also closes

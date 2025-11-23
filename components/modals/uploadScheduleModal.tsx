@@ -5,9 +5,11 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions
 import { Ionicons } from '@expo/vector-icons';
 import { ScheduleEntry, HOURS_MAP, DAYS, SAMPLE_SCHEDULE } from '@/assets/data/sample-schedule';
 
-const { width } = Dimensions.get('window');
-const CELL_WIDTH = (width - 60) / (DAYS.length + 0.5); // Adjust for time column
-const CELL_HEIGHT = 40;
+const { width, height: screenHeight } = Dimensions.get('window');
+// Base sizes scaled to 50%
+const BASE_TIME_COL_WIDTH = 72;
+const BASE_DAY_COL_WIDTH = 110;
+const BASE_CELL_HEIGHT = 44;
 
 interface UploadScheduleModalProps {
   visible: boolean;
@@ -21,6 +23,11 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
   onUpload,
 }) => {
   if (!visible) return null;
+
+  const ZOOM = 0.5;
+  const TIME_COL_WIDTH = Math.round(BASE_TIME_COL_WIDTH * ZOOM);
+  const DAY_COL_WIDTH = Math.round(BASE_DAY_COL_WIDTH * ZOOM);
+  const CELL_HEIGHT = Math.round(BASE_CELL_HEIGHT * ZOOM);
 
   // Function to render content inside a grid cell
   const renderCellContent = (day: string, hourIndex: number) => {
@@ -55,14 +62,14 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
           <Text style={styles.previewDescription}>This is a sample schedule. Tap Upload to use it.</Text>
 
           <View style={styles.gridContainer}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.grid}>
+            <ScrollView showsVerticalScrollIndicator={true} contentContainerStyle={{ flexGrow: 1 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+                <View style={[styles.grid, { width: TIME_COL_WIDTH + DAY_COL_WIDTH * DAYS.length }] }>
                   {/* Header Row (Days) */}
-                  <View style={styles.row}>
-                    <View style={[styles.cell, styles.timeCell, styles.headerCell]} />
+                  <View style={[styles.row, { height: CELL_HEIGHT }]}>
+                    <View style={[styles.cell, styles.headerCell, { width: TIME_COL_WIDTH, alignItems: 'center' }]} />
                     {DAYS.map((day) => (
-                      <View key={day} style={[styles.cell, styles.headerCell]}>
+                      <View key={day} style={[styles.cell, styles.headerCell, { width: DAY_COL_WIDTH }]}>
                         <Text style={styles.headerText}>{day}</Text>
                       </View>
                     ))}
@@ -72,12 +79,12 @@ export const UploadScheduleModal: React.FC<UploadScheduleModalProps> = ({
                   {Object.keys(HOURS_MAP).map((hourString) => {
                     const hourIndex = HOURS_MAP[hourString];
                     return (
-                      <View key={hourString} style={styles.row}>
-                        <View style={[styles.cell, styles.timeCell]}>
+                      <View key={hourString} style={[styles.row, { height: CELL_HEIGHT }]}>
+                        <View style={[styles.cell, { width: TIME_COL_WIDTH, alignItems: 'flex-start', backgroundColor: '#f0f0f0', paddingLeft: 5 }]}>
                           <Text style={styles.timeText}>{hourString}</Text>
                         </View>
                         {DAYS.map((day) => (
-                          <View key={`${day}-${hourString}`} style={styles.cell}>
+                          <View key={`${day}-${hourString}`} style={[styles.cell, { width: DAY_COL_WIDTH }]}>
                             {renderCellContent(day, hourIndex)}
                           </View>
                         ))}
@@ -111,7 +118,7 @@ const styles = StyleSheet.create({
     padding: 20,
     width: '90%',
     maxHeight: '85%',
-    alignItems: 'center',
+    alignItems: 'stretch',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -132,36 +139,27 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   gridContainer: {
-    flex: 1,
     width: '100%',
+    height: Math.min(Math.max(screenHeight * 0.45, 280), 480),
     marginBottom: 20,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     overflow: 'hidden',
+    backgroundColor: '#fff',
   },
-  grid: {
-    // No specific width needed here as cells define it
-  },
+  grid: {},
   row: {
     flexDirection: 'row',
-    height: CELL_HEIGHT,
   },
   cell: {
-    width: CELL_WIDTH,
     borderRightWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  timeCell: {
-    width: CELL_WIDTH * 0.7,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingLeft: 5,
-  },
+  timeCell: {},
   headerCell: {
     backgroundColor: '#e0e0e0',
     justifyContent: 'center',
