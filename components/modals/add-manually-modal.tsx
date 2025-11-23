@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Modal,
   View,
@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   Platform,
   KeyboardAvoidingView,
   FlatList,
@@ -89,7 +88,7 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   };
 
   // Reset whenever modal transitions from visible to hidden (parent closed it)
-  React.useEffect(() => {
+  useEffect(() => {
     if (!visible) {
       resetForm();
       setModalVisible(false); // ensure any selection sub-modal also closes
@@ -189,9 +188,6 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
                 </View>
               </View>
             </View>
-
-            {/* Day/Time removed per request */}
-
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                 <Text style={styles.label}>Building</Text>
