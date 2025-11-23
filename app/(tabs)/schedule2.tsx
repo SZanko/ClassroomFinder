@@ -6,14 +6,10 @@ import { View, Text, TouchableOpacity, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
-import {
-  DAYS,
-  HOURS_MAP,
-  ScheduleEntry,
-} from "../../assets/data/sample-schedule";
+import { DAYS, HOURS_MAP, ScheduleEntry, BasicManualEntry } from "../../assets/data/sample-schedule";
+import { AddManualTimeModal } from "../../components/modals/add-manually-time-modal";
 import { AddManualScheduleModal } from "../../components/modals/add-manually-modal";
 
-// Build HOURS array by index from HOURS_MAP (second method)
 const HOURS: string[] = (() => {
   const arr: string[] = [];
   Object.entries(HOURS_MAP).forEach(([label, idx]) => {
@@ -22,11 +18,8 @@ const HOURS: string[] = (() => {
   return arr;
 })();
 
-// Fixed height for the schedule grid (increase as requested)
-// const GRID_HEIGHT = 640; // adjust this value if you want it even taller
-const GRID_HEIGHT = 640; // adjust this value if you want it even taller
+const GRID_HEIGHT = 640;
 
-// Local shape for painted blocks on the grid
 type GridBlock = {
   dayIndex: number;
   start: number;
@@ -43,7 +36,8 @@ export default function ScheduleScreen() {
   const [isSelecting, setIsSelecting] = useState(false);
 
   const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
-  const [manualVisible, setManualVisible] = useState(false);
+  const [basicModalVisible, setBasicModalVisible] = useState(false);
+  const [timeModalVisible, setTimeModalVisible] = useState(false);
   const [blocks, setBlocks] = useState<GridBlock[]>([]);
   const [clickedExistingBlock, setClickedExistingBlock] = useState(false);
 
@@ -145,7 +139,7 @@ export default function ScheduleScreen() {
       setClickedExistingBlock(false);
       return;
     }
-    if (selectedCells.size > 0) setManualVisible(true);
+    if (selectedCells.size > 0) setBasicModalVisible(true);
   };
   const onGridLayout = (e: any) => {
     const { width, height } = e.nativeEvent.layout || {};
@@ -447,8 +441,9 @@ export default function ScheduleScreen() {
                     flexDirection: "row",
                   }}
                   onPress={() => {
-                    console.log("Add Manually");
                     setIsMenuOpen(false);
+                    clearSelection();
+                    setTimeModalVisible(true);
                   }}
                 >
                   <Ionicons
@@ -520,23 +515,100 @@ export default function ScheduleScreen() {
         </View>
       </View>
 
-      {/* Manual Add Modal */}
+      {/* Basic Modal triggered by slot selection */}
       <AddManualScheduleModal
-        visible={manualVisible}
+        visible={basicModalVisible}
         onClose={() => {
-          setManualVisible(false);
+          setBasicModalVisible(false);
           clearSelection();
         }}
-        onAdd={(entry: any) => {
-          const newBlocks = selectionToBlocks(entry as ScheduleEntry);
-          setBlocks((prev) => {
-            const next = [...prev, ...newBlocks];
-            return next;
+        onAdd={(entry: BasicManualEntry) => {
+          const perCol = new Map<number, number[]>();
+          selectedCells.forEach((key) => {
+            const [r, c] = key.split("-").map((n) => parseInt(n, 10));
+            if (r === 0 || c === 0) return;
+            const arr = perCol.get(c) ?? [];
+            arr.push(r);
+            perCol.set(c, arr);
           });
-          setManualVisible(false);
+          const newBlocks: GridBlock[] = [];
+          perCol.forEach((rows, c) => {
+            rows.sort((a, b) => a - b);
+            let start = rows[0];
+            let prev = rows[0];
+            for (let i = 1; i <= rows.length; i++) {
+              const cur = rows[i];
+              if (cur !== prev + 1) {
+                const startHour = start - 1;
+                const duration = prev - start + 1;
+                newBlocks.push({
+                  dayIndex: c - 1,
+                  start: startHour,
+                  duration,
+                  subject: entry.subject,
+                  building: entry.building,
+                  room: entry.room,
+                  type: entry.type,
+                });
+                start = cur;
+              }
+              prev = cur;
+            }
+          });
+          setBlocks((prev) => [...prev, ...newBlocks]);
+          setBasicModalVisible(false);
           clearSelection();
         }}
-        currentSchedule={[] as unknown as ScheduleEntry[]}
+        currentSchedule={blocks.map((b, i) => ({
+          id: `b-${i}`,
+          subject: b.subject,
+          type: b.type === "T" || b.type === "P" ? (b.type as "T" | "P") : "T",
+          building: b.building,
+          room: b.room,
+          day: DAYS[b.dayIndex],
+          start: b.start,
+          end: b.start + b.duration,
+        }))}
+      />
+
+      {/* Time Modal triggered from menu button */}
+      <AddManualTimeModal
+        visible={timeModalVisible}
+        onClose={() => {
+          setTimeModalVisible(false);
+          clearSelection();
+        }}
+        onAdd={(entry: ScheduleEntry) => {
+          const dayIndex = DAYS.indexOf(entry.day);
+          if (dayIndex === -1) {
+            console.warn("Invalid day in entry", entry.day);
+            setTimeModalVisible(false);
+            return;
+          }
+          const duration = entry.end - entry.start;
+          const newBlock: GridBlock = {
+            dayIndex,
+            start: entry.start,
+            duration,
+            subject: entry.subject,
+            building: entry.building,
+            room: entry.room,
+            type: entry.type,
+          };
+          setBlocks((prev) => [...prev, newBlock]);
+          setTimeModalVisible(false);
+          clearSelection();
+        }}
+        currentSchedule={blocks.map((b, i) => ({
+          id: `b-${i}`,
+          subject: b.subject,
+          type: b.type === "T" || b.type === "P" ? (b.type as "T" | "P") : "T",
+          building: b.building,
+          room: b.room,
+          day: DAYS[b.dayIndex],
+          start: b.start,
+          end: b.start + b.duration,
+        }))}
       />
     </SafeAreaView>
   );

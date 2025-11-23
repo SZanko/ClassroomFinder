@@ -12,7 +12,7 @@ import {
   FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ScheduleEntry, DAYS } from "@/assets/data/sample-schedule";
+import { ScheduleEntry, BasicManualEntry } from "@/assets/data/sample-schedule";
 
 const SUBJECTS = ["IPM", "ML", "SBD", "MSP", "IIO", "ASPI"];
 const BUILDINGS = ["VII", "II"];
@@ -24,15 +24,14 @@ const ROOMS_BY_BUILDING: Record<string, string[]> = {
 interface AddManualScheduleModalProps {
   visible: boolean;
   onClose: () => void;
-  onAdd: (entry: ScheduleEntry) => void;
-  currentSchedule: ScheduleEntry[];
+  onAdd: (entry: BasicManualEntry) => void;
+  currentSchedule: ScheduleEntry[]; 
 }
 
 export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   visible,
   onClose,
   onAdd,
-  currentSchedule,
 }) => {
   const [subject, setSubject] = useState("");
   const [type, setType] = useState<"T" | "P">("T");
@@ -43,21 +42,12 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
   const [modalType, setModalType] = useState<"SUBJECT" | "BUILDING" | "ROOM">(
     "SUBJECT"
   );
-
-  const hours = useMemo(() => Array.from({ length: 16 }, (_, i) => i + 8), []);
   const availableRooms = useMemo(
     () => (building ? ROOMS_BY_BUILDING[building] || [] : []),
     [building]
   );
 
   const openModal = (type: "SUBJECT" | "BUILDING" | "ROOM") => {
-    if (type === "ROOM" && !building) {
-      Alert.alert(
-        "Select Building First",
-        "Please select a building before choosing a room."
-      );
-      return;
-    }
     setModalType(type);
     setModalVisible(true);
   };
@@ -98,21 +88,19 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
     setType("T");
   };
 
+
+  //TODO: Add conflict checking here if needed
   const handleSubmit = () => {
     if (!subject || !building || !room) {
-      Alert.alert("Missing Info", "Please fill in all fields.");
       return;
     }
-
-    const newEntry: ScheduleEntry = {
+    const newEntry: BasicManualEntry = {
       id: Date.now().toString(),
       subject,
       type,
       building,
       room,
-      // day,
     };
-
     onAdd(newEntry);
     resetForm();
     onClose();
@@ -186,6 +174,8 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
               </View>
             </View>
 
+            {/* Day/Time removed per request */}
+
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                 <Text style={styles.label}>Building</Text>
@@ -231,19 +221,23 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
             <FlatList
               data={getModalData()}
               keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.selectionItem}
-                  onPress={() => handleSelect(item)}
-                >
-                  <Text style={styles.selectionItemText}>{item}</Text>
-                  {((modalType === "SUBJECT" && item === subject) ||
-                    (modalType === "BUILDING" && item === building) ||
-                    (modalType === "ROOM" && item === room)) && (
-                    <Ionicons name="checkmark" size={20} color="#007AFF" />
-                  )}
-                </TouchableOpacity>
-              )}
+              renderItem={({ item }) => {
+                const selected =
+                  (modalType === "SUBJECT" && item === subject) ||
+                  (modalType === "BUILDING" && item === building) ||
+                  (modalType === "ROOM" && item === room);
+                return (
+                  <TouchableOpacity
+                    style={styles.selectionItem}
+                    onPress={() => handleSelect(item)}
+                  >
+                    <Text style={styles.selectionItemText}>{item}</Text>
+                    {selected && (
+                      <Ionicons name="checkmark" size={20} color="#007AFF" />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
             />
           </View>
         </TouchableOpacity>

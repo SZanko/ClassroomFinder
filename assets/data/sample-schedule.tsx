@@ -1,12 +1,20 @@
 export interface ScheduleEntry {
-  id: string; // Unique ID for the entry
+  id: string;
   subject: string;
-  type: "T" | "P" | "TP"; // 't' for Theoretical, 'p' for Practical, 'L' for Lab, or empty if not specified
+  type: "T" | "P";
   building: string;
   room: string;
-  // day: "MON" | "TUE" | "WED" | "THU" | "FRI";
-  // hourIndex: number;
-  // duration: number;
+  day: "MON" | "TUE" | "WED" | "THU" | "FRI";
+  start: number;
+  end: number;
+}
+
+export interface BasicManualEntry {
+  id: string;
+  subject: string;
+  type: "T" | "P";
+  building: string;
+  room: string;
 }
 
 export const HOURS_MAP: { [key: string]: number } = {
@@ -23,9 +31,6 @@ export const HOURS_MAP: { [key: string]: number } = {
   "18-19": 10,
   "19-20": 11,
   "20-21": 12,
-  "21-22": 13,
-  "22-23": 14,
-  "23-00": 15,
 };
 
 export const DAYS = ["MON", "TUE", "WED", "THU", "FRI"] as const;
