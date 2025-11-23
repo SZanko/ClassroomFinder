@@ -144,6 +144,14 @@ export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
 		setEndLabel("");
 	};
 
+	// Reset when becoming hidden (parent closed it)
+	React.useEffect(() => {
+		if (!visible) {
+			resetForm();
+			setModalVisible(false); // ensure selection modal closed
+		}
+	}, [visible]);
+
 	const hasConflict = (
 		candidate: ScheduleEntry,
 		existing: ScheduleEntry[]
@@ -203,7 +211,10 @@ export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
 			visible={visible}
 			animationType="slide"
 			transparent={true}
-			onRequestClose={onClose}
+			onRequestClose={() => {
+				resetForm();
+				onClose();
+			}}
 		>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -211,8 +222,13 @@ export const AddManualTimeModal: React.FC<AddManualTimeModalProps> = ({
 			>
 				<View style={styles.modalContent}>
 					<View style={styles.header}>
-						<Text style={styles.title}>Add Class (Full)</Text>
-						<TouchableOpacity onPress={onClose}>
+						<Text style={styles.title}>Add Class</Text>
+						<TouchableOpacity
+							onPress={() => {
+								resetForm();
+								onClose();
+							}}
+						>
 							<Ionicons name="close" size={24} color="#666" />
 						</TouchableOpacity>
 					</View>

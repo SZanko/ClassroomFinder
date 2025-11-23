@@ -88,6 +88,14 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
     setType("T");
   };
 
+  // Reset whenever modal transitions from visible to hidden (parent closed it)
+  React.useEffect(() => {
+    if (!visible) {
+      resetForm();
+      setModalVisible(false); // ensure any selection sub-modal also closes
+    }
+  }, [visible]);
+
 
   //TODO: Add conflict checking here if needed
   const handleSubmit = () => {
@@ -111,7 +119,10 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
       visible={visible}
       animationType="slide"
       transparent={true}
-      onRequestClose={onClose}
+      onRequestClose={() => {
+        resetForm();
+        onClose();
+      }}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -119,8 +130,13 @@ export const AddManualScheduleModal: React.FC<AddManualScheduleModalProps> = ({
       >
         <View style={styles.modalContent}>
           <View style={styles.header}>
-            <Text style={styles.title}>Add Class Manually</Text>
-            <TouchableOpacity onPress={onClose}>
+            <Text style={styles.title}>Add Class</Text>
+            <TouchableOpacity
+              onPress={() => {
+                resetForm();
+                onClose();
+              }}
+            >
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>

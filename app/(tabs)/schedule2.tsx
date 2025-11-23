@@ -182,12 +182,11 @@ export default function ScheduleScreen() {
     return newBlocks;
   };
 
-  // Color helper: 'T' -> light blue, 'P' -> dark blue
+  // Color helper: 'T' -> dark blue, 'P' -> light blue (based on type field)
   const getColorsForBlock = (b: GridBlock) => {
-    const subj = b.subject || "";
-    if (subj.includes("P")) return { bg: "#0A3069", fg: "#fff" }; // practical -> dark
-    if (subj.includes("T")) return { bg: "#cce5ff", fg: "#0A3069" }; // theoretical -> light
-    return { bg: "#DDEBFF", fg: "#0A3069" }; // default
+    if (b.type === "T") return { bg: "#0A3069", fg: "#fff" }; // theoretical
+    if (b.type === "P") return { bg: "#cce5ff", fg: "#0A3069" }; // practical
+    return { bg: "#DDEBFF", fg: "#0A3069" }; // fallback
   };
 
   return (
