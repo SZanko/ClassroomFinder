@@ -23,7 +23,7 @@ interface SelectionModalProps {
 export const SelectionModal: React.FC<SelectionModalProps> = ({
   visible,
   title,
-  data,
+  data = [],
   selectedItem,
   onClose,
   onSelect,
