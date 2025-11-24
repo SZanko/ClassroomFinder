@@ -19,12 +19,14 @@ import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
 import { NavigationMap } from "@/components/ui/map";
 import React, { useCallback, useEffect, useState } from "react";
 import { SearchWidget, SearchCriteria } from "@/components/ui/search-bar";
-import { coordinator } from "@/services/routing";
+import { point as turfPoint } from "@turf/helpers";
+import { coordinator, roomPolygonsFC } from "@/services/routing";
 import { GeoPoint, useCurrentLocation } from "@/hooks/use-current-location";
 import { AnySegment } from "@/services/routing/types";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProfileIcon } from "@/components/ui/profile_icon_button";
 import { useFocusEffect } from "@react-navigation/native";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 
 const floatingButtonStyle = {
   position: "absolute" as const,
@@ -39,6 +41,19 @@ const startStopButtonStyle = {
   left: 20,
   zIndex: 20,
 };
+
+function findRoomAtLocation(lng: number, lat: number): string | null {
+  const pt = turfPoint([lng, lat]);
+
+  for (const f of roomPolygonsFC.features) {
+    if (booleanPointInPolygon(pt, f as any)) {
+      const ref = f.properties?.ref ?? f.properties?.name ?? null;
+      if (ref) return ref;
+    }
+  }
+
+  return null;
+}
 
 export default function MapScreen() {
   const [route, setRoute] = useState<AnySegment[] | null>(null);
@@ -82,7 +97,7 @@ export default function MapScreen() {
           setExternalSearch(null);
           // optional: stop navigation if you use this
           // setIsNavigating(false);
-          return true; // 👈 we handled it, don't close the app
+          return true;
         }
 
         // No route → let Android handle back (close app / go previous screen)
@@ -129,11 +144,26 @@ export default function MapScreen() {
 
       // However you encode your indoor target (this is just an example)
       let toId;
+
+      const currentRoom = findRoomAtLocation(from[0], from[1]);
+      console.log("Current room:", currentRoom);
       if (
         criteria.type === "location" &&
         criteria.building !== null &&
         criteria.room !== null
       ) {
+        if (currentRoom) {
+          console.info("Inside current room");
+
+          const segments = coordinator.routeRoomToRoom(
+            currentRoom, // your build script can map this to the correct building
+            criteria.room,
+          );
+
+          setRoute(segments);
+          return;
+        }
+
         const segments: AnySegment[] = await coordinator.routeGpsToBuildingRoom(
           from,
           criteria.building,
