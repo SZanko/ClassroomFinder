@@ -8,7 +8,12 @@ import {
   Alert,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { FontAwesome, FontAwesome6, AntDesign, Fontisto } from "@expo/vector-icons";
+import {
+  FontAwesome,
+  FontAwesome6,
+  AntDesign,
+  Fontisto,
+} from "@expo/vector-icons";
 import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
 import { NavigationMap } from "@/components/ui/map";
 import React, { useEffect, useState } from "react";
@@ -124,6 +129,34 @@ export default function MapScreen() {
     }
   };
 
+  const handleRoomLongPress = async ({
+    building,
+    room,
+  }: {
+    building: string;
+    room: string;
+  }) => {
+    try {
+      const from: [number, number] = [
+        startingPoint.longitude,
+        startingPoint.latitude,
+      ];
+
+      const segments: AnySegment[] = await coordinator.routeGpsToBuildingRoom(
+        from,
+        building,
+        room,
+      );
+      setRoute(segments);
+
+      // optional: update search widget
+      setExternalSearch({ building, room });
+    } catch (e) {
+      console.warn("Failed to compute route from long-pressed room", e);
+      setRoute(null);
+    }
+  };
+
   const handleToggleNavigation = () => {
     if (isNavigating) {
       setIsNavigating(false);
@@ -194,6 +227,7 @@ export default function MapScreen() {
           route={route}
           userLocation={userLocation}
           followUser={isNavigating}
+          onRoomLongPress={handleRoomLongPress}
         />
 
         {/* Search Bar */}

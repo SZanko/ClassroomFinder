@@ -13,14 +13,18 @@ import {
 import Constants from "expo-constants";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import osmtogeojson from "osmtogeojson";
-import { FeatureCollection, Point, Polygon } from "geojson";
+import { Feature, FeatureCollection, Geometry, Point, Polygon } from "geojson";
+import { point as turfPoint } from "@turf/helpers";
 import { ActivityIndicator, View, StyleSheet, Text } from "react-native";
 import * as Location from "expo-location";
+import type { OnPressEvent } from "@maplibre/maplibre-react-native";
 
 import polygons from "@/assets/data/rooms_polygons.json";
 import centers from "@/assets/data/rooms_centers.json";
 import { AnySegment } from "@/services/routing/types";
 import { GeoPoint } from "@/hooks/use-current-location";
+import { ROOM_TO_BUILDING, roomPolygonsFC } from "@/services/routing";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 
 const { MAPTILER_API_KEY } = Constants.expoConfig?.extra ?? {};
 
@@ -78,28 +82,18 @@ const bbox = {
 const roomPolygons = polygons as FeatureCollection<Polygon>;
 const roomCenters = centers as FeatureCollection<Point>;
 
-//const query = `
-//[out:json][timeout:25];
-//(
-//  way["indoor"="room"](around:50,38.6610,-9.2059);
-//);
-//out geom;`;
-
-//const queryNew = `[out:json][timeout:25];nwr["indoor"="room"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});out center tags;`;
-const query = `[out:json][timeout:25];
-  way["indoor"="room"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
-  out geom tags;`;
-
 type NavigationMapProps = {
   route?: AnySegment[] | null;
   userLocation?: GeoPoint | null;
   followUser?: boolean;
+  onRoomLongPress?: (payload: { building: string; room: string }) => void;
 };
 
 export function NavigationMap({
   route,
   userLocation,
   followUser,
+  onRoomLongPress,
 }: Readonly<NavigationMapProps>) {
   const cameraRef = useRef<CameraRef | null>(null);
   const mapRef = useRef<MapViewRef | null>(null);
@@ -236,6 +230,46 @@ export function NavigationMap({
   //  };
   //}, [route]);
 
+  const handleMapLongPress = async (feature: Feature<Geometry>) => {
+    console.info("Long press on map");
+    if (!mapRef.current || !onRoomLongPress) return;
+    if (feature.geometry?.type !== "Point") return;
+
+    const [longitude, latitude] = feature.geometry.coordinates as [
+      number,
+      number,
+    ];
+
+    const pt = turfPoint([longitude, latitude]);
+
+    let hitRoom: Feature<Polygon> | null = null;
+    for (const f of roomPolygonsFC.features) {
+      if (booleanPointInPolygon(pt, f as any)) {
+        hitRoom = f as Feature<Polygon>;
+        break;
+      }
+    }
+
+    if (!hitRoom) {
+      // Long-press wasn’t actually inside any room polygon
+      return;
+    }
+
+    // Room id from polygon properties
+    const roomId: string =
+      (hitRoom.properties?.ref as string | undefined) ??
+      (hitRoom.properties?.name as string | undefined) ??
+      "";
+
+    if (!roomId) return;
+
+    // Map room → building using your ROOM_TO_BUILDING index
+    const building = ROOM_TO_BUILDING[roomId];
+    if (!building) return;
+
+    onRoomLongPress({ building, room: roomId });
+  };
+
   const routeCollection = useMemo(() => {
     if (!route || route.length === 0) return null;
 
@@ -279,7 +313,8 @@ export function NavigationMap({
       style={styles.map}
       mapStyle={styleURL}
       logoEnabled={false}
-      compassEnabled={true}
+      compassEnabled={false}
+      onLongPress={handleMapLongPress}
     >
       <Camera
         ref={cameraRef}
