@@ -6,6 +6,7 @@ import {
   View,
   Text,
   Alert,
+  BackHandler,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -16,13 +17,14 @@ import {
 } from "@expo/vector-icons";
 import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
 import { NavigationMap } from "@/components/ui/map";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { SearchWidget, SearchCriteria } from "@/components/ui/search-bar";
 import { coordinator } from "@/services/routing";
 import { GeoPoint, useCurrentLocation } from "@/hooks/use-current-location";
 import { AnySegment } from "@/services/routing/types";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProfileIcon } from "@/components/ui/profile_icon_button";
+import { useFocusEffect } from "@react-navigation/native";
 
 const floatingButtonStyle = {
   position: "absolute" as const,
@@ -70,6 +72,33 @@ export default function MapScreen() {
       });
     }
   }, [params.building, params.room]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // If there is a route preview, clear it instead of exiting
+        if (route && route.length > 0) {
+          setRoute(null);
+          setExternalSearch(null);
+          // optional: stop navigation if you use this
+          // setIsNavigating(false);
+          return true; // 👈 we handled it, don't close the app
+        }
+
+        // No route → let Android handle back (close app / go previous screen)
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress,
+      );
+
+      return () => {
+        subscription.remove();
+      };
+    }, [route]),
+  );
 
   const handleProfilePress = () => {
     Alert.alert("Student Name", "student@fct.unl.pt", [
