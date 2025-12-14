@@ -7,6 +7,8 @@ import {
   Text,
   Alert,
   BackHandler,
+  Modal,
+  Pressable,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -14,6 +16,7 @@ import {
   FontAwesome6,
   AntDesign,
   Fontisto,
+  Ionicons,
 } from "@expo/vector-icons";
 import { toggleButtonStyle } from "@/components/ui/toggle-tab-button";
 import { NavigationMap } from "@/components/ui/map";
@@ -58,6 +61,7 @@ function findRoomAtLocation(lng: number, lat: number): string | null {
 export default function MapScreen() {
   const [route, setRoute] = useState<AnySegment[] | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
 
   const [externalSearch, setExternalSearch] = useState<{
     building: string;
@@ -88,7 +92,7 @@ export default function MapScreen() {
     }
   }, [params.building, params.room]);
 
-  useFocusEffect(
+   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
         // If there is a route preview, clear it instead of exiting
@@ -116,14 +120,7 @@ export default function MapScreen() {
   );
 
   const handleProfilePress = () => {
-    Alert.alert("Student Name", "student@fct.unl.pt", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Log Out",
-        style: "destructive",
-        onPress: () => router.replace("/login"),
-      },
-    ]);
+    setProfileMenuVisible(true);
   };
 
   const handleCompoundSearch = async (criteria: SearchCriteria) => {
@@ -188,7 +185,7 @@ export default function MapScreen() {
     }
   };
 
-  const handleRoomLongPress = async ({
+   const handleRoomLongPress = async ({
     building,
     room,
   }: {
@@ -227,7 +224,7 @@ export default function MapScreen() {
     }
   };
 
-  //const handleCompoundSearch = async (criteria: SearchCriteria) => {
+  // const handleCompoundSearch = async (criteria: SearchCriteria) => {
   //  try {
   //    const from: [number, number] = [
   //      startingPoint.longitude,
@@ -277,7 +274,7 @@ export default function MapScreen() {
   //    );
   //    setRoute(null);
   //  }
-  //};
+  // };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -327,6 +324,94 @@ export default function MapScreen() {
           <FontAwesome name="calendar" size={22} color="#fff" />
         </TouchableOpacity>
       </View>
+
+      {/* Profile Menu Modal */}
+      <Modal
+        visible={profileMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setProfileMenuVisible(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={() => setProfileMenuVisible(false)}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              padding: 20,
+              width: "80%",
+              maxWidth: 300,
+            }}
+            onStartShouldSetResponder={() => true}
+          >
+            <View
+              style={{
+                alignItems: "center",
+                marginBottom: 20,
+                paddingBottom: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: "#e0e0e0",
+              }}
+            >
+              <Ionicons
+                name="person-circle-outline"
+                size={60}
+                color="#007AFF"
+              />
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  marginTop: 8,
+                  color: "#333",
+                }}
+              >
+                Student Name
+              </Text>
+              <Text style={{ fontSize: 14, color: "#666", marginTop: 4 }}>
+                student@fct.unl.pt
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#FF3B30",
+                padding: 14,
+                borderRadius: 8,
+                alignItems: "center",
+              }}
+              onPress={() => {
+                setProfileMenuVisible(false);
+                router.replace("/login");
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "600", color: "#fff" }}>
+                Log Out
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#f0f0f0",
+                padding: 14,
+                borderRadius: 8,
+                alignItems: "center",
+                marginTop: 12,
+              }}
+              onPress={() => setProfileMenuVisible(false)}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }

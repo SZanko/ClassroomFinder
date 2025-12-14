@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
-import { View, Text, TouchableOpacity, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Pressable,
+  Modal,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
@@ -57,6 +64,8 @@ export default function ScheduleScreen() {
   );
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
 
   const STORAGE_KEY = "@schedule_blocks";
   const loadSchedule = async () => {
@@ -151,6 +160,11 @@ export default function ScheduleScreen() {
       params: { building: selectedEntry.building, room: selectedEntry.room },
     });
   };
+
+  const handleProfilePress = () => {
+    setProfileMenuVisible(true);
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View
@@ -171,9 +185,7 @@ export default function ScheduleScreen() {
             Schedule
           </Text>
           <TouchableOpacity
-            onPress={() => {
-              console.log("Add button pressed");
-            }}
+            onPress={handleProfilePress}
           >
             <Ionicons name="person-circle-outline" size={40} color="#007AFF" />
           </TouchableOpacity>
@@ -229,6 +241,7 @@ export default function ScheduleScreen() {
                   );
                 }
 
+                const blockAtCell = getBlockAt(rowIndex, colIndex);
                 return (
                   <TouchableOpacity
                     key={`cell-${rowIndex}-${colIndex}`}
@@ -246,7 +259,11 @@ export default function ScheduleScreen() {
                     }}
                     activeOpacity={0.8}
                     onPress={() => toggleCellSelection(rowIndex, colIndex)}
-                  />
+                  >
+                    {!blockAtCell && (
+                      <Ionicons name="add" size={16} color="#007AFF" />
+                    )}
+                  </TouchableOpacity>
                 );
               })}
             </View>
@@ -439,7 +456,7 @@ export default function ScheduleScreen() {
           {/* Trash button */}
           {blocks.length > 0 && (
             <TouchableOpacity
-              onPress={() => setBlocks([])}
+              onPress={() => setDeleteConfirmVisible(true)}
               style={{
                 position: "absolute",
                 left: 190,
@@ -697,6 +714,176 @@ export default function ScheduleScreen() {
           clearSelection();
         }}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteConfirmVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteConfirmVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              padding: 24,
+              width: "80%",
+              maxWidth: 400,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                marginBottom: 12,
+                textAlign: "center",
+              }}
+            >
+              Delete Schedule
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#666",
+                marginBottom: 24,
+                textAlign: "center",
+              }}
+            >
+              Are you sure you want to delete your entire schedule? This action
+              cannot be undone.
+            </Text>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 14,
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: 8,
+                  alignItems: "center",
+                }}
+                onPress={() => setDeleteConfirmVisible(false)}
+              >
+                <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 14,
+                  backgroundColor: "#FF3B30",
+                  borderRadius: 8,
+                  alignItems: "center",
+                }}
+                onPress={() => {
+                  setBlocks([]);
+                  setDeleteConfirmVisible(false);
+                }}
+              >
+                <Text style={{ fontSize: 16, fontWeight: "600", color: "#fff" }}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Profile Menu Modal */}
+      <Modal
+        visible={profileMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setProfileMenuVisible(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={() => setProfileMenuVisible(false)}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              padding: 20,
+              width: "80%",
+              maxWidth: 300,
+            }}
+            onStartShouldSetResponder={() => true}
+          >
+            <View
+              style={{
+                alignItems: "center",
+                marginBottom: 20,
+                paddingBottom: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: "#e0e0e0",
+              }}
+            >
+              <Ionicons
+                name="person-circle-outline"
+                size={60}
+                color="#007AFF"
+              />
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  marginTop: 8,
+                  color: "#333",
+                }}
+              >
+                Student Name
+              </Text>
+              <Text style={{ fontSize: 14, color: "#666", marginTop: 4 }}>
+                student@fct.unl.pt
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#FF3B30",
+                padding: 14,
+                borderRadius: 8,
+                alignItems: "center",
+              }}
+              onPress={() => {
+                setProfileMenuVisible(false);
+                router.replace("/login");
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "600", color: "#fff" }}>
+                Log Out
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#f0f0f0",
+                padding: 14,
+                borderRadius: 8,
+                alignItems: "center",
+                marginTop: 12,
+              }}
+              onPress={() => setProfileMenuVisible(false)}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
